@@ -1,0 +1,280 @@
+fileFormatVersion: 2
+guid: 0db37af3687ea244196d1d339652e14a
+ModelImporter:
+  serializedVersion: 16
+  fileIDToRecycleName:
+    100000: Ankle_L
+    100002: Ankle_R
+    100004: Arm_L
+    100006: Arm_R
+    100008: Armature
+    100010: Foot_L
+    100012: Foot_R
+    100014: LeftShark
+    100016: LowerBody
+    100018: LowerLeg_L
+    100020: LowerLeg_R
+    100022: //RootNode
+    100024: UpperArm_L
+    100026: UpperArm_R
+    100028: UpperBody
+    100030: UpperLeg_L
+    100032: UpperLeg_R
+    400000: Ankle_L
+    400002: Ankle_R
+    400004: Arm_L
+    400006: Arm_R
+    400008: Armature
+    400010: Foot_L
+    400012: Foot_R
+    400014: LeftShark
+    400016: LowerBody
+    400018: LowerLeg_L
+    400020: LowerLeg_R
+    400022: //RootNode
+    400024: UpperArm_L
+    400026: UpperArm_R
+    400028: UpperBody
+    400030: UpperLeg_L
+    400032: UpperLeg_R
+    4300000: LeftShark
+    7400000: Default Take
+    7400002: Idle
+    7400004: JumpLeft
+    7400006: JumpRight
+    9500000: //RootNode
+    13700000: LeftShark
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    optimizeGameObjects: 0
+    motionNodeName: 
+    animationCompression: 1
+    animationRotationError: .5
+    animationPositionError: .5
+    animationScaleError: .5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    clipAnimations:
+    - serializedVersion: 16
+      name: Idle
+      takeName: Idle
+      firstFrame: 0
+      lastFrame: 47
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      loopTime: 1
+      loopBlend: 1
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask:
+      - path: 
+        weight: 1
+      - path: Armature
+        weight: 1
+      - path: Armature/Ankle_L
+        weight: 1
+      - path: Armature/Ankle_L/Foot_L
+        weight: 1
+      - path: Armature/Ankle_R
+        weight: 1
+      - path: Armature/Ankle_R/Foot_R
+        weight: 1
+      - path: Armature/LowerBody
+        weight: 1
+      - path: Armature/LowerBody/UpperArm_L
+        weight: 1
+      - path: Armature/LowerBody/UpperArm_L/Arm_L
+        weight: 1
+      - path: Armature/LowerBody/UpperArm_R
+        weight: 1
+      - path: Armature/LowerBody/UpperArm_R/Arm_R
+        weight: 1
+      - path: Armature/LowerBody/UpperBody
+        weight: 1
+      - path: Armature/LowerBody/UpperLeg_L
+        weight: 1
+      - path: Armature/LowerBody/UpperLeg_L/LowerLeg_L
+        weight: 1
+      - path: Armature/LowerBody/UpperLeg_R
+        weight: 1
+      - path: Armature/LowerBody/UpperLeg_R/LowerLeg_R
+        weight: 1
+      - path: LeftShark
+        weight: 1
+      maskType: 0
+      maskSource: {instanceID: 0}
+    - serializedVersion: 16
+      name: JumpLeft
+      takeName: JumpLeft
+      firstFrame: 0
+      lastFrame: 23
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask:
+      - path: 
+        weight: 1
+      - path: Armature
+        weight: 1
+      - path: Armature/Ankle_L
+        weight: 1
+      - path: Armature/Ankle_L/Foot_L
+        weight: 1
+      - path: Armature/Ankle_R
+        weight: 1
+      - path: Armature/Ankle_R/Foot_R
+        weight: 1
+      - path: Armature/LowerBody
+        weight: 1
+      - path: Armature/LowerBody/UpperArm_L
+        weight: 1
+      - path: Armature/LowerBody/UpperArm_L/Arm_L
+        weight: 1
+      - path: Armature/LowerBody/UpperArm_R
+        weight: 1
+      - path: Armature/LowerBody/UpperArm_R/Arm_R
+        weight: 1
+      - path: Armature/LowerBody/UpperBody
+        weight: 1
+      - path: Armature/LowerBody/UpperLeg_L
+        weight: 1
+      - path: Armature/LowerBody/UpperLeg_L/LowerLeg_L
+        weight: 1
+      - path: Armature/LowerBody/UpperLeg_R
+        weight: 1
+      - path: Armature/LowerBody/UpperLeg_R/LowerLeg_R
+        weight: 1
+      - path: LeftShark
+        weight: 1
+      maskType: 0
+      maskSource: {instanceID: 0}
+    - serializedVersion: 16
+      name: JumpRight
+      takeName: JumpRight
+      firstFrame: 0
+      lastFrame: 23
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask:
+      - path: 
+        weight: 1
+      - path: Armature
+        weight: 1
+      - path: Armature/Ankle_L
+        weight: 1
+      - path: Armature/Ankle_L/Foot_L
+        weight: 1
+      - path: Armature/Ankle_R
+        weight: 1
+      - path: Armature/Ankle_R/Foot_R
+        weight: 1
+      - path: Armature/LowerBody
+        weight: 1
+      - path: Armature/LowerBody/UpperArm_L
+        weight: 1
+      - path: Armature/LowerBody/UpperArm_L/Arm_L
+        weight: 1
+      - path: Armature/LowerBody/UpperArm_R
+        weight: 1
+      - path: Armature/LowerBody/UpperArm_R/Arm_R
+        weight: 1
+      - path: Armature/LowerBody/UpperBody
+        weight: 1
+      - path: Armature/LowerBody/UpperLeg_L
+        weight: 1
+      - path: Armature/LowerBody/UpperLeg_L/LowerLeg_L
+        weight: 1
+      - path: Armature/LowerBody/UpperLeg_R
+        weight: 1
+      - path: Armature/LowerBody/UpperLeg_R/LowerLeg_R
+        weight: 1
+      - path: LeftShark
+        weight: 1
+      maskType: 0
+      maskSource: {instanceID: 0}
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    importBlendShapes: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+  tangentSpace:
+    normalSmoothAngle: 60
+    splitTangentsAcrossUV: 1
+    normalImportMode: 0
+    tangentImportMode: 1
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    human: []
+    skeleton: []
+    armTwist: .5
+    foreArmTwist: .5
+    upperLegTwist: .5
+    legTwist: .5
+    armStretch: .0500000007
+    legStretch: .0500000007
+    feetSpacing: 0
+    rootMotionBoneName: 
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 2
+  additionalBone: 0
+  userData: 

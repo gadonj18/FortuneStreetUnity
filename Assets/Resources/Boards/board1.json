@@ -1,0 +1,205 @@
+{
+    "id": "1",
+    "title": "First Board",
+    "background": "",
+    "startCash": 2000,
+    "targetWorth": 12000,
+    "minPlayers": 2,
+    "maxPlayers": 4,
+    "tiles": [
+        {
+            "tileCode": 8,
+            "x": 8,
+            "y": 8,
+            "dirRestrictions": []
+        },
+        {
+            "tileCode": 10,
+            "x": 2,
+            "y": 8,
+            "dirRestrictions": []
+        },
+        {
+            "tileCode": 4,
+            "x": 14,
+            "y": 8,
+            "dirRestrictions": []
+        },
+        {
+            "tileCode": 9,
+            "x": 8,
+            "y": 15,
+            "dirRestrictions": []
+        },
+        {
+            "tileCode": 11,
+            "x": 8,
+            "y": 1,
+            "dirRestrictions": []
+        },
+        {
+            "tileCode": 0,
+            "x": 2,
+            "y": 14,
+            "dirRestrictions": []
+        },
+        {
+            "tileCode": 3,
+            "x": 14,
+            "y": 14,
+            "dirRestrictions": []
+        },
+        {
+            "tileCode": 1,
+            "x": 14,
+            "y": 2,
+            "dirRestrictions": []
+        },
+        {
+            "tileCode": 2,
+            "x": 2,
+            "y": 2,
+            "dirRestrictions": []
+        },
+        {
+            "tileCode": 12,
+            "district": "A",
+            "x": 4,
+            "y": 8,
+            "dirRestrictions": []
+        },
+        {
+            "tileCode": 12,
+            "district": "A",
+            "x": 6,
+            "y": 8,
+            "dirRestrictions": []
+        },
+        {
+            "tileCode": 12,
+            "district": "A",
+            "x": 10,
+            "y": 8,
+            "dirRestrictions": []
+        },
+        {
+            "tileCode": 12,
+            "district": "A",
+            "x": 12,
+            "y": 8,
+            "dirRestrictions": []
+        },
+        {
+            "tileCode": 12,
+            "district": "B",
+            "x": 1,
+            "y": 10,
+            "dirRestrictions": []
+        },
+        {
+            "tileCode": 12,
+            "district": "B",
+            "x": 1,
+            "y": 12,
+            "dirRestrictions": []
+        },
+        {
+            "tileCode": 12,
+            "district": "B",
+            "x": 4,
+            "y": 15,
+            "dirRestrictions": []
+        },
+        {
+            "tileCode": 12,
+            "district": "B",
+            "x": 6,
+            "y": 15,
+            "dirRestrictions": []
+        },
+        {
+            "tileCode": 12,
+            "district": "C",
+            "x": 10,
+            "y": 15,
+            "dirRestrictions": []
+        },
+        {
+            "tileCode": 12,
+            "district": "C",
+            "x": 12,
+            "y": 15,
+            "dirRestrictions": []
+        },
+        {
+            "tileCode": 12,
+            "district": "C",
+            "x": 15,
+            "y": 12,
+            "dirRestrictions": []
+        },
+        {
+            "tileCode": 12,
+            "district": "C",
+            "x": 15,
+            "y": 10,
+            "dirRestrictions": []
+        },
+        {
+            "tileCode": 12,
+            "district": "D",
+            "x": 1,
+            "y": 6,
+            "dirRestrictions": []
+        },
+        {
+            "tileCode": 12,
+            "district": "D",
+            "x": 1,
+            "y": 4,
+            "dirRestrictions": []
+        },
+        {
+            "tileCode": 12,
+            "district": "D",
+            "x": 4,
+            "y": 1,
+            "dirRestrictions": []
+        },
+        {
+            "tileCode": 12,
+            "district": "D",
+            "x": 6,
+            "y": 1,
+            "dirRestrictions": []
+        },
+        {
+            "tileCode": 12,
+            "district": "E",
+            "x": 10,
+            "y": 1,
+            "dirRestrictions": []
+        },
+        {
+            "tileCode": 12,
+            "district": "E",
+            "x": 12,
+            "y": 1,
+            "dirRestrictions": []
+        },
+        {
+            "tileCode": 12,
+            "district": "E",
+            "x": 15,
+            "y": 4,
+            "dirRestrictions": []
+        },
+        {
+            "tileCode": 12,
+            "district": "E",
+            "x": 15,
+            "y": 6,
+            "dirRestrictions": []
+        }
+    ]
+}
