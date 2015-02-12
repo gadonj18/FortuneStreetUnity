@@ -12,7 +12,6 @@ public class StateManager : MonoBehaviour {
 	}
 
 	public void Start() {
-		Debug.Log("DERP");
 		gameLogic = GameObject.Find("_GameLogic");
 	}
 
@@ -21,12 +20,13 @@ public class StateManager : MonoBehaviour {
 	}
 
 	public IEnumerator Transition(Constants.GameStates newState) {
+		yield return null;
 		if (currentState != null) {
 			yield return StartCoroutine(currentState.End());
 			UnregisterInputEvents();
 		}
 		currentState = null;
-		currentState = (IGameState)System.Activator.CreateInstance (System.Type.GetType (newState.ToString()));
+		currentState = (IGameState)System.Activator.CreateInstance(System.Type.GetType(newState.ToString()));
 		currentState.GameLogic = gameLogic;
 		RegisterInputEvents();
 		yield return StartCoroutine(currentState.Start());

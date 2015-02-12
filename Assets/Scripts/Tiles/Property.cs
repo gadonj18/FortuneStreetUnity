@@ -2,12 +2,11 @@
 using System.Collections;
 
 public class Property : Tile {
-	public Property() {
+	public void Awake() {
 		Type = Constants.TileCodes.Property;
-		gameObject = (GameObject)GameObject.Instantiate(Resources.Load("Prefabs/UnownedProperty"));
 	}
 
 	public void SetDistrict(string district) {
-		gameObject.transform.FindChild("Border").gameObject.renderer.material.color = Config.Instance.GetDistrictColor(district);
+		transform.FindChild("Border").gameObject.renderer.material.color = Config.Instance.GetDistrictColor(district);
 	}
 }

@@ -17,7 +17,6 @@ public class Game : MonoBehaviour {
 	void Awake() {
 		//ChangeStates(Constants.GameStates.Playing);
 		boardInfo = LoadLevel(1);
-		Debug.Log("Loaded");
 	}
 
 	//Init others

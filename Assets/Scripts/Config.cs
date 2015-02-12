@@ -28,11 +28,29 @@ public class Config {
 	public Color GetDistrictColor(string DistrictCode) {
 		return districtColors[DistrictCode];
 	}
+
 	public void SetDistrictColor(string DistrictCode, Color color) {
 		if (!districtColors.ContainsKey(DistrictCode)) {
 			districtColors.Add(DistrictCode, color);
 		} else {
 			districtColors [DistrictCode] = color;
 		}
+	}
+
+	public Dictionary<int, PlayerInfo> playerInfo = new Dictionary<int, PlayerInfo>() {
+		{ 1, new PlayerInfo("Player1", Color.red) },
+		{ 2, new PlayerInfo("Player2", Color.blue) },
+		{ 3, new PlayerInfo("Player3", Color.green) },
+		{ 4, new PlayerInfo("Player4", Color.white) }
+	};
+}
+
+public struct PlayerInfo {
+	public string Name;
+	public Color Color;
+
+	public PlayerInfo(string name, Color color) {
+		Name = name;
+		Color = color;
 	}
 }

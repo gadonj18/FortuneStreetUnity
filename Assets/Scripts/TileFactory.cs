@@ -13,12 +13,17 @@ public class TileFactory {
 		}
 	}
 
-	public Tile Build(Constants.TileCodes code, int x, int y, string district = null) {
-		Tile newTile = (Tile)System.Activator.CreateInstance(System.Type.GetType(code.ToString()));
-		if (code == Constants.TileCodes.Property && district != null) {
-			((Property)newTile).SetDistrict(district);
+	public GameObject Build(Constants.TileCodes code, int x, int y, string district = null) {
+		Object prefab = Resources.Load("Prefabs/" + code.ToString() + "Tile");
+		if(prefab != null) {
+			GameObject Tile = (GameObject)GameObject.Instantiate(prefab);
+			//Tile newTile = (Tile)System.Activator.CreateInstance(System.Type.GetType(code.ToString()));
+			if(code == Constants.TileCodes.Property && district != null) {
+					Tile.GetComponent<Property>().SetDistrict(district);
+			}
+			Tile.transform.position = new Vector3(0.95f * x, 0f, 0.95f * y);
+			return Tile;
 		}
-		newTile.gameObject.transform.position = new Vector3(0.95f * x, 0f, 0.95f * y);
-		return newTile;
+		return null;
 	}
 }
