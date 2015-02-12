@@ -14,6 +14,10 @@ public class Player : MonoBehaviour {
 	private Dictionary<string, int> stocks;
 	private Dictionary<Constants.Cards, bool> cards;
 	private int level;
+	private int hopLeftHash = Animator.StringToHash("Base Layer.HopLeft");
+	private int hopRightHash = Animator.StringToHash("Base Layer.HopRight");
+	private bool leftHopNext = true;
+	public float MoveSpeed = 2.6f;
 
 	public string Name {
 		get { return name; }
@@ -78,20 +82,27 @@ public class Player : MonoBehaviour {
 
 	public void MoveTo(Tile tile) {
 		nextTile = tile;
-		StartCoroutine("MoveTo", nextTile);
+		StartCoroutine("MoveToTarget");
 	}
 
-	private IEnumerator MoveTo() {
-		Debug.Log("Move");
-		transform.rotation = Quaternion.LookRotation(nextTile.transform.position - transform.position) * Quaternion.Euler(-15f, 0f, 0f);
-		while(transform.position != nextTile.transform.position) {
-			Debug.Log("Moving");
-			transform.position = Vector3.MoveTowards (transform.position, nextTile.transform.position, Time.deltaTime * 2f);
+	private IEnumerator MoveToTarget() {
+		float distance = Vector3.Distance(nextTile.transform.position, transform.position);
+		Vector3 targetPos = new Vector3(nextTile.transform.position.x, transform.position.y, nextTile.transform.position.z - 0.491f);
+		GetComponent<Animator>().Play(leftHopNext ? hopLeftHash : hopRightHash);
+		leftHopNext = !leftHopNext;
+
+		transform.rotation = Quaternion.LookRotation(targetPos - transform.position) * Quaternion.Euler(-15f, 0f, 0f);
+		while(transform.position != targetPos) {
+			transform.position = Vector3.MoveTowards (transform.position, targetPos, Time.deltaTime * MoveSpeed);
 			yield return null;
 		}
-		Debug.Log("Moved");
 		lastTile = currentTile;
 		currentTile = nextTile;
 		nextTile = null;
+		yield return null;
+	}
+
+	void OnHopEnd() {
+		transform.rotation = Quaternion.Euler(-15f, 180f, 0f);
 	}
 }	

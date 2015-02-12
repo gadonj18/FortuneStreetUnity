@@ -31,11 +31,9 @@ public class Playing : BaseGameState {
 	
 	public void Move_LeftClick(InputEventArgs e) {
 		Tile targetTile = (Tile)GetTileAt(e.MousePosition).GetComponent<Tile>();
-		Tile currentTile = currentPlayer.GetComponent<Player>().CurrentTile;
 		if(targetTile != null) {
-			Debug.Log("Found Tile");
-			if(board.ValidMove(currentTile.BoardX, currentTile.BoardY, targetTile.BoardX, targetTile.BoardY)) {
-				Debug.Log("Should Move");
+			Tile currentTile = currentPlayer.GetComponent<Player>().CurrentTile;
+			if(board.ValidMove(currentTile, targetTile)) {
 				currentPlayer.GetComponent<Player>().MoveTo(targetTile);
 			}
 		}
