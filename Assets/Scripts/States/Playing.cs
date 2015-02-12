@@ -4,16 +4,24 @@ using System.Collections.Generic;
 
 public class Playing : BaseGameState {
 	private enum States { ChooseAction, Roll, Move, Confirm };
-	private States currentState = States.Move;
-	private ICollection<Constants.InputEvents> inputEvents = new List<Constants.InputEvents>() {
-		Constants.InputEvents.MouseUp
-	};
-	private Board board = new Board();
-	private Dictionary<int, Player> players;
-	private Player currentPlayer;
+	private States currentState;
+	private ICollection<Constants.InputEvents> inputEvents;
+	private Board board;
+	private Dictionary<int, GameObject> players;
+	private GameObject currentPlayer;
 
 	public override ICollection<Constants.InputEvents> InputEvents {
 		get { return inputEvents; }
+	}
+
+	public Playing() {
+		currentState = States.Move;
+		inputEvents = new List<Constants.InputEvents>() {
+			Constants.InputEvents.MouseUp
+		};
+		board = new Board();
+		players = new Dictionary<int, GameObject>();
+		currentPlayer = null;
 	}
 
 	public override void MouseUp(InputEventArgs e) {
@@ -22,9 +30,14 @@ public class Playing : BaseGameState {
 	}
 	
 	public void Move_LeftClick(InputEventArgs e) {
-		Tile tile = (Tile)GetTileAt(e.MousePosition).GetComponent<Tile>();
-		if(tile != null && board.ValidMove(tile.BoardX, tile.BoardY, 0, 0)) {
-
+		Tile targetTile = (Tile)GetTileAt(e.MousePosition).GetComponent<Tile>();
+		Tile currentTile = currentPlayer.GetComponent<Player>().CurrentTile;
+		if(targetTile != null) {
+			Debug.Log("Found Tile");
+			if(board.ValidMove(currentTile.BoardX, currentTile.BoardY, targetTile.BoardX, targetTile.BoardY)) {
+				Debug.Log("Should Move");
+				currentPlayer.GetComponent<Player>().MoveTo(targetTile);
+			}
 		}
 	}
 
@@ -45,6 +58,8 @@ public class Playing : BaseGameState {
 		BoardInfo info = script.BoardInfo;
 		BuildLevel(info);
 		AddPlayers(Config.Instance.playerInfo);
+		SwitchPlayers(1);
+		Camera.main.GetComponent<MoveCamera>().Character = currentPlayer;
 		yield return null;
 	}
 
@@ -55,16 +70,31 @@ public class Playing : BaseGameState {
 	public override void KeyHeld(InputEventArgs e) { throw new System.NotImplementedException (); }
 	public override void KeyUp(InputEventArgs e) { throw new System.NotImplementedException (); }
 
-	void BuildLevel(BoardInfo info) {
+	private void BuildLevel(BoardInfo info) {
 		for(int i = 0; i < info.Tiles.Count; i++) {
 			GameObject newTile = TileFactory.Instance.Build(info.Tiles[i].Code, info.Tiles[i].TileX, info.Tiles[i].TileY, info.Tiles[i].District);
 			board.AddTile(newTile, info.Tiles[i].TileX, info.Tiles[i].TileY);
 		}
 	}
 
-	void AddPlayers(Dictionary<int,PlayerInfo> playerInfo) {
+	private void AddPlayers(Dictionary<int,PlayerInfo> playerInfo) {
 		foreach(KeyValuePair<int, PlayerInfo> entry in playerInfo) {
-
+			GameObject player = (GameObject)GameObject.Instantiate(Resources.Load("Prefabs/Player"));
+			Player playerScript = (Player)player.GetComponent<Player>();
+			playerScript.CurrentTile = board.bank.GetComponent<Bank>();
+			playerScript.Name = entry.Value.Name;
+			playerScript.Color = entry.Value.Color;
+			playerScript.Hide();
+			players.Add(entry.Key, player);
 		}
+	}
+
+	private void SwitchPlayers(int playerNum) {
+		if(currentPlayer != null) {
+			currentPlayer.GetComponent<Player>().Hide();
+		}
+		currentPlayer = players[playerNum];
+		currentPlayer.GetComponent<Player>().Show();
+		Camera.main.GetComponent<MoveCamera>().Character = currentPlayer;
 	}
 }

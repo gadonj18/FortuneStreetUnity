@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public class Player {
+public class Player : MonoBehaviour {
 	private GameObject gameObject;
 	private string name;
 	private Color color;
@@ -62,9 +62,36 @@ public class Player {
 		set { level = value; }
 	}
 
-	public Player() {
+	public void Awake() {
 		properties = new Dictionary<string, List<Property>>();
 		stocks = new Dictionary<string, int>();
 		cards = new Dictionary<Constants.Cards, bool> ();
+	}
+	
+	public void Hide() {
+		this.transform.Find("Model").GetComponent<SkinnedMeshRenderer>().enabled = false;
+	}
+
+	public void Show() {
+		this.transform.Find("Model").GetComponent<SkinnedMeshRenderer>().enabled = true;
+	}
+
+	public void MoveTo(Tile tile) {
+		nextTile = tile;
+		StartCoroutine("MoveTo", nextTile);
+	}
+
+	private IEnumerator MoveTo() {
+		Debug.Log("Move");
+		transform.rotation = Quaternion.LookRotation(nextTile.transform.position - transform.position) * Quaternion.Euler(-15f, 0f, 0f);
+		while(transform.position != nextTile.transform.position) {
+			Debug.Log("Moving");
+			transform.position = Vector3.MoveTowards (transform.position, nextTile.transform.position, Time.deltaTime * 2f);
+			yield return null;
+		}
+		Debug.Log("Moved");
+		lastTile = currentTile;
+		currentTile = nextTile;
+		nextTile = null;
 	}
 }	
