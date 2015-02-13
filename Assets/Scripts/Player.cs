@@ -3,8 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 public class Player : MonoBehaviour {
-	private GameObject gameObject;
-	private string name;
+	private string playerName;
 	private Color color;
 	private Tile lastTile;
 	private Tile currentTile;
@@ -19,9 +18,9 @@ public class Player : MonoBehaviour {
 	private bool leftHopNext = true;
 	public float MoveSpeed = 2.6f;
 
-	public string Name {
-		get { return name; }
-		set { name = value; }
+	public string PlayerName {
+		get { return playerName; }
+		set { playerName = value; }
 	}
 
 	public Color Color {
@@ -86,7 +85,6 @@ public class Player : MonoBehaviour {
 	}
 
 	private IEnumerator MoveToTarget() {
-		float distance = Vector3.Distance(nextTile.transform.position, transform.position);
 		Vector3 targetPos = new Vector3(nextTile.transform.position.x, transform.position.y, nextTile.transform.position.z - 0.491f);
 		GetComponent<Animator>().Play(leftHopNext ? hopLeftHash : hopRightHash);
 		leftHopNext = !leftHopNext;

@@ -80,7 +80,7 @@ public class Playing : BaseGameState {
 			GameObject player = (GameObject)GameObject.Instantiate(Resources.Load("Prefabs/Player"));
 			Player playerScript = (Player)player.GetComponent<Player>();
 			playerScript.CurrentTile = board.bank.GetComponent<Bank>();
-			playerScript.Name = entry.Value.Name;
+			playerScript.PlayerName = entry.Value.Name;
 			playerScript.Color = entry.Value.Color;
 			playerScript.Hide();
 			players.Add(entry.Key, player);
