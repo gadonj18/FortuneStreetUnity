@@ -16,6 +16,7 @@ public class Player : MonoBehaviour {
 	private int hopLeftHash = Animator.StringToHash("Base Layer.HopLeft");
 	private int hopRightHash = Animator.StringToHash("Base Layer.HopRight");
 	private bool leftHopNext = true;
+	public bool moving = false;
 	public float MoveSpeed = 2.6f;
 
 	public delegate void PlayerMoveHandler(PlayerMoveEventArgs e);
@@ -83,6 +84,7 @@ public class Player : MonoBehaviour {
 	}
 
 	public void MoveTo(Tile tile) {
+		moving = true;
 		nextTile = tile;
 		StartCoroutine("MoveToTarget");
 	}
@@ -103,6 +105,7 @@ public class Player : MonoBehaviour {
 		lastTile = currentTile;
 		currentTile = nextTile;
 		nextTile = null;
+		moving = false;
 		yield return null;
 	}
 

@@ -30,17 +30,19 @@ public class Playing : BaseGameState {
 	}
 	
 	public void Move_LeftClick(InputEventArgs e) {
-		Tile targetTile = (Tile)GetTileAt(e.MousePosition).GetComponent<Tile>();
-		if(targetTile != null) {
-			Tile currentTile = currentPlayer.GetComponent<Player>().CurrentTile;
-			if(board.ValidMove(currentTile, targetTile)) {
-				currentPlayer.GetComponent<Player>().MoveTo(targetTile);
+		if(!currentPlayer.GetComponent<Player>().moving) {
+			Tile targetTile = (Tile)GetTileAt(e.MousePosition).GetComponent<Tile>();
+			if(targetTile != null) {
+				Tile currentTile = currentPlayer.GetComponent<Player>().CurrentTile;
+				if(targetTile != currentTile && board.ValidMove(currentTile, targetTile)) {
+					currentPlayer.GetComponent<Player>().MoveTo(targetTile);
+				}
 			}
 		}
 	}
 
 	private void PlayerMove(PlayerMoveEventArgs e) {
-
+		Debug.Log("Moved");
 	}
 
 
