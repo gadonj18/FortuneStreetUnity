@@ -39,6 +39,11 @@ public class Playing : BaseGameState {
 		}
 	}
 
+	private void PlayerMove(PlayerMoveEventArgs e) {
+
+	}
+
+
 	private GameObject GetTileAt(Vector3 mousePosition) {
 		Ray ray = Camera.main.ScreenPointToRay(mousePosition);
 		RaycastHit hit;
@@ -85,6 +90,7 @@ public class Playing : BaseGameState {
 			playerScript.Hide();
 			players.Add(entry.Key, player);
 		}
+		Player.PlayerMove += new Player.PlayerMoveHandler(this.PlayerMove);
 	}
 
 	private void SwitchPlayers(int playerNum) {

@@ -18,6 +18,9 @@ public class Player : MonoBehaviour {
 	private bool leftHopNext = true;
 	public float MoveSpeed = 2.6f;
 
+	public delegate void PlayerMoveHandler(PlayerMoveEventArgs e);
+	public static event PlayerMoveHandler PlayerMove;
+
 	public string PlayerName {
 		get { return playerName; }
 		set { playerName = value; }
@@ -94,6 +97,9 @@ public class Player : MonoBehaviour {
 			transform.position = Vector3.MoveTowards (transform.position, targetPos, Time.deltaTime * MoveSpeed);
 			yield return null;
 		}
+		if(PlayerMove != null) {
+			PlayerMove(new PlayerMoveEventArgs(nextTile));
+		}
 		lastTile = currentTile;
 		currentTile = nextTile;
 		nextTile = null;
@@ -104,3 +110,11 @@ public class Player : MonoBehaviour {
 		transform.rotation = Quaternion.Euler(-15f, 180f, 0f);
 	}
 }	
+
+public class PlayerMoveEventArgs : System.EventArgs {
+	public Tile tile;
+
+	public PlayerMoveEventArgs(Tile targetTile) {
+		tile = targetTile;
+	}
+}
