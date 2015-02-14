@@ -34,7 +34,9 @@ public class Playing : BaseGameState {
 			Tile targetTile = (Tile)GetTileAt(e.MousePosition).GetComponent<Tile>();
 			if(targetTile != null) {
 				Tile currentTile = currentPlayer.GetComponent<Player>().CurrentTile;
-				if(targetTile != currentTile && board.ValidMove(currentTile, targetTile)) {
+				List<Move> path = board.GetPath(currentTile, targetTile);
+				if(path.Count > 0/* && path.Count <= diceRoll*/) {
+
 					currentPlayer.GetComponent<Player>().MoveTo(targetTile);
 				}
 			}

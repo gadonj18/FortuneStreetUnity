@@ -42,7 +42,7 @@ public class Board {
 		return (diffX <= 2 && diffY <= 2);
 	}
 	
-	public bool ValidMove(Tile originTile, Tile targetTile) {
+	public bool GetPath(Tile originTile, Tile targetTile) {
 		return ValidMove((int)originTile.BoardX, (int)originTile.BoardY, (int)targetTile.BoardX, (int)targetTile.BoardY);
 	}
 }

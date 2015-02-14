@@ -5,61 +5,52 @@ using System.Collections.Generic;
 public class MoveList {
 	private List<Move> moves;
 	private List<Tile> queue;
-	private int currentIdx;
 
 	public MoveList() {
 		moves = new List<Move>();
-		currentIdx = 0;
 	}
 	
-	public void AddMove(Move move) {
-		moves.Add(move);
-		currentIdx++;
+	public void Next() {
+		Move newMove = new Move(queue[0]);
+		queue.RemoveAt(0);
 	}
 
-	public void AddPath(List<Move> moves) {
-		moves.AddRange(moves);
-		currentIdx++;
+	public void FinishMove(int cashChange, KeyValuePair<string, int> stockChange, Constants.Cards? cardChange, int levelChange) {
+		moves[moves.Count - 1].SetChanges(cashChange, stockChange, cardChange, levelChange);
+	}
+
+	public void AddQueue(List<Move> moves) {
+		queue.Clear();
+		foreach(Move move in moves) {
+			queue.Add(move);
+		}
 	}
 
 	public void GoBack() {
-		moves.RemoveRange(currentIdx, moves.Count - currentIdx);
-		currentIdx--;
+		queue.Clear();
+		moves.RemoveAt(moves.Count - 1);
 	}
 
 	public void ClearQueue() {
-		moves.RemoveRange(currentIdx + 1, moves.Count - currentIdx - 1);
-	}
-	
-	public List<Move> GetQueue() {
-		return moves.GetRange(currentIdx + 1, moves.Count - currentIdx - 1);
-	}
-	
-	public List<Move> GetHistory() {
-		return moves.GetRange(0, currentIdx + 1);
-	}
-	
-	public List<Move> GetList() {
-		return moves;
+		queue.Clear();
 	}
 }
 
 public class Move {
 	Tile tile;
 	int cash = 0;
-	KeyValuePair<string, int>? stock;
-	Constants.Cards card;
+	KeyValuePair<string, int>? stock = null;
+	Constants.Cards? card = null;
 	int level = 0;
 	
 	public Move(Tile newTile) {
 		tile = newTile;
 	}
 
-	public Move(Tile newTile, int newCash, KeyValuePair<string, int> newStock, Constants.Cards newCard, int newLevel) {
-		tile = newTile;
-		cash = newCash;
-		stock = newStock;
-		card = newCard;
-		level = newLevel;
+	public void SetChanges(int cashChange, KeyValuePair<string, int>? stockChange, Constants.Cards? cardChange, int levelChange) {
+		cash = cashChange;
+		stock = stockChange;
+		card = cardChange;
+		level = levelChange;
 	}
 }
