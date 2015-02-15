@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -9,13 +10,15 @@ public class Playing : BaseGameState {
 	private Board board;
 	private Dictionary<int, GameObject> players;
 	private GameObject currentPlayer;
+	private int movesLeft = 0;
+	private GameObject ActionMenu;
 
 	public override ICollection<Constants.InputEvents> InputEvents {
 		get { return inputEvents; }
 	}
 
 	public Playing() {
-		currentState = States.Move;
+		currentState = States.ChooseAction;
 		inputEvents = new List<Constants.InputEvents>() {
 			Constants.InputEvents.MouseUp
 		};
@@ -24,21 +27,32 @@ public class Playing : BaseGameState {
 		currentPlayer = null;
 	}
 
+	public void RollButton_Click() {
+		ActionMenu.SetActive(false);
+		movesLeft = Random.Range(0, 6);
+		currentState = States.Move;
+	}
+
 	public override void MouseUp(InputEventArgs e) {
 		string[] mouseButton = new string[] { "Left", "Middle", "Right" };
 		typeof(Playing).GetMethod(currentState.ToString() + "_" + mouseButton[e.MouseCode] + "Click").Invoke(this, new object[] { e });
 	}
+
+	public void ChooseAction_LeftClick(InputEventArgs e) {
+
+	}
 	
 	public void Move_LeftClick(InputEventArgs e) {
 		if(!currentPlayer.GetComponent<Player>().moving) {
-			Tile targetTile = (Tile)GetTileAt(e.MousePosition).GetComponent<Tile>();
+			Tile targetTile = GetTileAt(e.MousePosition);
 			if(targetTile != null) {
 				Tile currentTile = currentPlayer.GetComponent<Player>().CurrentTile;
-				List<Move> path = board.GetPath(currentTile, targetTile);
-				if(path.Count > 0/* && path.Count <= diceRoll*/) {
+				Debug.Log("Move");
+				//List<List<Tile>> paths = board.GetPaths(currentTile, currentPlayer.GetComponent<Player>().dir, 6);
+				//if(path.Count > 0/* && path.Count <= diceRoll*/) {
 
-					currentPlayer.GetComponent<Player>().MoveTo(targetTile);
-				}
+				//	currentPlayer.GetComponent<Player>().MoveTo(targetTile);
+				//}
 			}
 		}
 	}
@@ -48,13 +62,13 @@ public class Playing : BaseGameState {
 	}
 
 
-	private GameObject GetTileAt(Vector3 mousePosition) {
+	private Tile GetTileAt(Vector3 mousePosition) {
 		Ray ray = Camera.main.ScreenPointToRay(mousePosition);
 		RaycastHit hit;
 		if(Physics.Raycast(ray, out hit, Mathf.Infinity)) {
 			string name = hit.collider.gameObject.name;
 			if(name.Substring(name.Length - 11, 4) == "Tile") {
-				return hit.collider.gameObject;
+				return hit.collider.gameObject.GetComponent<Tile>();
 			}
 		}
 		return null;
@@ -67,6 +81,8 @@ public class Playing : BaseGameState {
 		AddPlayers(Config.Instance.playerInfo);
 		SwitchPlayers(1);
 		Camera.main.GetComponent<MoveCamera>().Character = currentPlayer;
+		ActionMenu = GameObject.Find("ActionMenu");
+		ActionMenu.SetActive(true);
 		yield return null;
 	}
 
@@ -86,7 +102,7 @@ public class Playing : BaseGameState {
 
 	private void AddPlayers(Dictionary<int,PlayerInfo> playerInfo) {
 		foreach(KeyValuePair<int, PlayerInfo> entry in playerInfo) {
-			GameObject player = (GameObject)GameObject.Instantiate(Resources.Load("Prefabs/Player"));
+			GameObject player = (GameObject)GameObject.Instantiate(Resources.Load("Prefabs/Characters/LeftShark"));
 			Player playerScript = (Player)player.GetComponent<Player>();
 			playerScript.CurrentTile = board.bank.GetComponent<Bank>();
 			playerScript.PlayerName = entry.Value.Name;

@@ -19,10 +19,10 @@ public class MoveList {
 		moves[moves.Count - 1].SetChanges(cashChange, stockChange, cardChange, levelChange);
 	}
 
-	public void AddQueue(List<Move> moves) {
+	public void AddQueue(List<Tile> tiles) {
 		queue.Clear();
-		foreach(Move move in moves) {
-			queue.Add(move);
+		foreach(Tile tile in tiles) {
+			queue.Add(tile);
 		}
 	}
 

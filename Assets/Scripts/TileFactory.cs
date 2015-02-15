@@ -14,7 +14,7 @@ public class TileFactory {
 	}
 
 	public GameObject Build(Constants.TileCodes code, int x, int y, string district = null) {
-		Object prefab = Resources.Load("Prefabs/" + code.ToString() + "Tile");
+		Object prefab = Resources.Load("Prefabs/Tiles/" + code.ToString() + "Tile");
 		if(prefab != null) {
 			GameObject Tile = (GameObject)GameObject.Instantiate(prefab);
 			Tile.GetComponent<Tile>().BoardX = x;

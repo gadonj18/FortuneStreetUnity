@@ -42,7 +42,8 @@ public class Board {
 		return (diffX <= 2 && diffY <= 2);
 	}
 	
-	public bool GetPath(Tile originTile, Tile targetTile) {
-		return ValidMove((int)originTile.BoardX, (int)originTile.BoardY, (int)targetTile.BoardX, (int)targetTile.BoardY);
+	public List<List<Tile>> GetPaths(Tile originTile, Constants.Directions dir, int diceRoll) {
+		List<List<Tile>> paths = new List<List<Tile>>();
+		return paths;
 	}
 }
