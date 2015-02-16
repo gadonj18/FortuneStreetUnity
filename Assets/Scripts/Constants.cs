@@ -1,5 +1,6 @@
 ﻿public static class Constants {
-	public enum Directions { N, NE, E, SE, S, SW, W, NW };
+	public enum Directions {
+		N, NNW, NW, WNW, W, WSW, SW, SSW, S, SSE, SE, ESE, E, ENE, NE, NNE, Any };
 
 	public enum TileCodes {
 		Heart,

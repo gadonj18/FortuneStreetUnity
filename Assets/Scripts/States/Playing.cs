@@ -12,6 +12,7 @@ public class Playing : BaseGameState {
 	private GameObject currentPlayer;
 	private int movesLeft = 0;
 	private GameObject ActionMenu;
+	private GameObject Dice;
 
 	public override ICollection<Constants.InputEvents> InputEvents {
 		get { return inputEvents; }
@@ -29,17 +30,24 @@ public class Playing : BaseGameState {
 
 	public void RollButton_Click() {
 		ActionMenu.SetActive(false);
-		movesLeft = Random.Range(0, 6);
+		movesLeft = Random.Range(1, 6);
+		GameObject dice = GameObject.Find("Dice");
+		dice.renderer.enabled = true;
+		dice.GetComponent<DiceSpin>().Roll(movesLeft);
 		currentState = States.Move;
+	}
+
+	public void DiceSpun() {
+		Dice.renderer.enabled = false;
+		Player player = (Player)currentPlayer.GetComponent<Player>();
+		List<List<Tile>> paths = board.GetPaths(player.CurrentTile, player.Direction, movesLeft);
+		Debug.Log(paths.Count);
 	}
 
 	public override void MouseUp(InputEventArgs e) {
 		string[] mouseButton = new string[] { "Left", "Middle", "Right" };
-		typeof(Playing).GetMethod(currentState.ToString() + "_" + mouseButton[e.MouseCode] + "Click").Invoke(this, new object[] { e });
-	}
-
-	public void ChooseAction_LeftClick(InputEventArgs e) {
-
+		System.Reflection.MethodInfo method = typeof(Playing).GetMethod(currentState.ToString() + "_" + mouseButton[e.MouseCode] + "Click");
+		if(method != null) method.Invoke(this, new object[] { e });
 	}
 	
 	public void Move_LeftClick(InputEventArgs e) {
@@ -47,7 +55,6 @@ public class Playing : BaseGameState {
 			Tile targetTile = GetTileAt(e.MousePosition);
 			if(targetTile != null) {
 				Tile currentTile = currentPlayer.GetComponent<Player>().CurrentTile;
-				Debug.Log("Move");
 				//List<List<Tile>> paths = board.GetPaths(currentTile, currentPlayer.GetComponent<Player>().dir, 6);
 				//if(path.Count > 0/* && path.Count <= diceRoll*/) {
 
@@ -78,11 +85,15 @@ public class Playing : BaseGameState {
 		Game script = this.GameLogic.GetComponent<Game>();
 		BoardInfo info = script.BoardInfo;
 		BuildLevel(info);
+		board.BuildPaths();
 		AddPlayers(Config.Instance.playerInfo);
 		SwitchPlayers(1);
 		Camera.main.GetComponent<MoveCamera>().Character = currentPlayer;
 		ActionMenu = GameObject.Find("ActionMenu");
 		ActionMenu.SetActive(true);
+		Dice = GameObject.Find("Dice");
+		Dice.renderer.enabled = false;
+		DiceSpin.DiceSpun += new DiceSpin.DiceSpinHandler(this.DiceSpun);
 		yield return null;
 	}
 

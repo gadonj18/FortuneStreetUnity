@@ -8,6 +8,7 @@ public class Player : MonoBehaviour {
 	private Tile lastTile;
 	private Tile currentTile;
 	private Tile nextTile;
+	private Constants.Directions direction = Constants.Directions.Any;
 	private int cash;
 	private Dictionary<string, List<Property>> properties;
 	private Dictionary<string, int> stocks;
@@ -45,6 +46,11 @@ public class Player : MonoBehaviour {
 	public Tile NextTile {
 		get { return nextTile; }
 		set { nextTile = value; }
+	}
+
+	public Constants.Directions Direction {
+		get { return direction; }
+		set { direction = value; }
 	}
 
 	public int Cash {
