@@ -13,6 +13,8 @@ public class Playing : BaseGameState {
 	private int movesLeft = 0;
 	private GameObject ActionMenu;
 	private GameObject Dice;
+	private List<List<Tile>> paths;
+	private MoveList moveList;
 
 	public override ICollection<Constants.InputEvents> InputEvents {
 		get { return inputEvents; }
@@ -34,14 +36,13 @@ public class Playing : BaseGameState {
 		GameObject dice = GameObject.Find("Dice");
 		dice.renderer.enabled = true;
 		dice.GetComponent<DiceSpin>().Roll(movesLeft);
-		currentState = States.Move;
 	}
 
 	public void DiceSpun() {
 		Dice.renderer.enabled = false;
 		Player player = (Player)currentPlayer.GetComponent<Player>();
-		List<List<Tile>> paths = board.GetPaths(player.CurrentTile, player.Direction, movesLeft);
-		Debug.Log(paths.Count);
+		paths = board.GetPaths(player.CurrentTile, player.Direction, movesLeft);
+		currentState = States.Move;
 	}
 
 	public override void MouseUp(InputEventArgs e) {
@@ -54,14 +55,36 @@ public class Playing : BaseGameState {
 		if(!currentPlayer.GetComponent<Player>().moving) {
 			Tile targetTile = GetTileAt(e.MousePosition);
 			if(targetTile != null) {
-				Tile currentTile = currentPlayer.GetComponent<Player>().CurrentTile;
-				//List<List<Tile>> paths = board.GetPaths(currentTile, currentPlayer.GetComponent<Player>().dir, 6);
-				//if(path.Count > 0/* && path.Count <= diceRoll*/) {
+				bool inPath = false;
+				List<Tile> newPath;
+				foreach(List<Tile> path in paths) {
+					newPath = TileInPath(path, targetTile);
+					if(newPath != null) {
+						inPath = true;
+						break;
+					}
+				}
+				if(inPath) {
+					moveList.ClearQueue();
+					moveList.AddQueue(newPath);
+					//currentPlayer.GetComponent<Player>().MoveTo(targetTile);
 
-				//	currentPlayer.GetComponent<Player>().MoveTo(targetTile);
-				//}
+				}
 			}
 		}
+	}
+
+	private List<Tile> TileInPath(List<Tile> path, Tile targetTile) {
+		bool inPath = false;
+		List<Tile> targetPath = new List<Tile>();
+		foreach(Tile tile in path) {
+			targetPath.Add(tile);
+			if(targetTile == tile) {
+				inPath = true;
+				break;
+			}
+		}
+		return (inPath ? targetPath : null);
 	}
 
 	private void PlayerMove(PlayerMoveEventArgs e) {
@@ -94,6 +117,7 @@ public class Playing : BaseGameState {
 		Dice = GameObject.Find("Dice");
 		Dice.renderer.enabled = false;
 		DiceSpin.DiceSpun += new DiceSpin.DiceSpinHandler(this.DiceSpun);
+		moveList = new MoveList();
 		yield return null;
 	}
 
