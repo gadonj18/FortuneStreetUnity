@@ -5,6 +5,7 @@ using System.Collections.Generic;
 public class StateManager : MonoBehaviour {
 	private GameObject gameLogic;
     private IGameState currentState = null;
+	private Constants.GameStates state;
 
 	public IGameState CurrentState {
 		get { return currentState; }
@@ -22,14 +23,17 @@ public class StateManager : MonoBehaviour {
 	public IEnumerator Transition(Constants.GameStates newState) {
 		yield return null;
 		if (currentState != null) {
-			yield return StartCoroutine(currentState.End());
+			yield return StartCoroutine(currentState.Ending());
 			UnregisterInputEvents();
+			Destroy(gameLogic.GetComponent(state.ToString()));
 		}
 		currentState = null;
-		currentState = (IGameState)System.Activator.CreateInstance(System.Type.GetType(newState.ToString()));
+		state = newState;
+		//currentState = (IGameState)System.Activator.CreateInstance(System.Type.GetType(newState.ToString()));
+		currentState = (IGameState)gameLogic.AddComponent(newState.ToString());
 		currentState.GameLogic = gameLogic;
 		RegisterInputEvents();
-		yield return StartCoroutine(currentState.Start());
+		yield return StartCoroutine(currentState.Starting());
 	}
 
 	public void RegisterInputEvents() {

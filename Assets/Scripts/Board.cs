@@ -4,6 +4,7 @@ using System.Collections.Generic;
 public class Board {
 	private Dictionary<int, Dictionary<int, GameObject>> tiles;
 	public GameObject bank;
+	public List<string> Districts;
 	private Dictionary<int, Dictionary<int, Constants.Directions>> XYtoDir = new Dictionary<int, Dictionary<int, Constants.Directions>>() {
 		{ -2, new Dictionary<int, Constants.Directions>() {
 				{ -2, Constants.Directions.SW },
@@ -71,8 +72,11 @@ public class Board {
 		} else {
 			tiles[x][y] = tile;
 		}
-		if (tile.GetComponent<Tile>().Type == Constants.TileCodes.Bank) {
+		Tile tileScript = (Tile)tile.GetComponent<Tile>();
+		if(tileScript.Type == Constants.TileCodes.Bank) {
 			bank = tile;
+		} else if(tileScript.Type == Constants.TileCodes.Property) {
+			//Districts.Add(((Property)tileScript).District);
 		}
 	}
 

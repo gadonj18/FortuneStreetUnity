@@ -8,6 +8,17 @@ public class MoveList {
 
 	public MoveList() {
 		moves = new List<Move>();
+		queue = new List<Tile>();
+	}
+	
+	public List<Tile> Queue {
+		get { return queue; }
+		set { AddQueue(value); }
+	}
+
+	public List<Move> Moves {
+		get { return moves; }
+		private set { moves = value; }
 	}
 	
 	public void Next() {
@@ -34,14 +45,18 @@ public class MoveList {
 	public void ClearQueue() {
 		queue.Clear();
 	}
+
+	public Move LastMove() {
+		return moves[moves.Count - 1];
+	}
 }
 
 public class Move {
-	Tile tile;
-	int cash = 0;
-	KeyValuePair<string, int>? stock = null;
-	Constants.Cards? card = null;
-	int level = 0;
+	public Tile tile;
+	public int cash = 0;
+	public KeyValuePair<string, int>? stock = null;
+	public Constants.Cards? card = null;
+	public int level = 0;
 	
 	public Move(Tile newTile) {
 		tile = newTile;

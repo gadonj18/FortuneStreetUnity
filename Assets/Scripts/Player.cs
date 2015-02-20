@@ -7,7 +7,6 @@ public class Player : MonoBehaviour {
 	private Color color;
 	private Tile lastTile;
 	private Tile currentTile;
-	private Tile nextTile;
 	private Constants.Directions direction = Constants.Directions.Any;
 	private int cash;
 	private Dictionary<string, List<Property>> properties;
@@ -43,11 +42,6 @@ public class Player : MonoBehaviour {
 		set { currentTile = value; }
 	}
 
-	public Tile NextTile {
-		get { return nextTile; }
-		set { nextTile = value; }
-	}
-
 	public Constants.Directions Direction {
 		get { return direction; }
 		set { direction = value; }
@@ -79,6 +73,11 @@ public class Player : MonoBehaviour {
 		properties = new Dictionary<string, List<Property>>();
 		stocks = new Dictionary<string, int>();
 		cards = new Dictionary<Constants.Cards, bool> ();
+		Constants.Cards[] cardList = (Constants.Cards[])System.Enum.GetValues(typeof(Constants.Cards));
+		foreach(Constants.Cards card in cardList) {
+			cards[card] = false;
+		}
+		transform.rotation = Quaternion.Euler(-15f, 180f, 0f);
 	}
 	
 	public void Hide() {
@@ -88,15 +87,16 @@ public class Player : MonoBehaviour {
 	public void Show() {
 		this.transform.Find("Model").GetComponent<SkinnedMeshRenderer>().enabled = true;
 	}
-
+	
 	public void MoveTo(Tile tile) {
 		moving = true;
-		nextTile = tile;
-		StartCoroutine("MoveToTarget");
+		StartCoroutine("MoveToTarget", tile);
+		lastTile = currentTile;
+		currentTile = tile;
 	}
 
-	private IEnumerator MoveToTarget() {
-		Vector3 targetPos = new Vector3(nextTile.transform.position.x, transform.position.y, nextTile.transform.position.z - 0.491f);
+	private IEnumerator MoveToTarget(Tile targetTile) {
+		Vector3 targetPos = new Vector3(targetTile.transform.position.x, transform.position.y, targetTile.transform.position.z - 0.491f);
 		GetComponent<Animator>().Play(leftHopNext ? hopLeftHash : hopRightHash);
 		leftHopNext = !leftHopNext;
 
@@ -106,11 +106,8 @@ public class Player : MonoBehaviour {
 			yield return null;
 		}
 		if(PlayerMove != null) {
-			PlayerMove(new PlayerMoveEventArgs(nextTile));
+			PlayerMove(new PlayerMoveEventArgs(targetTile));
 		}
-		lastTile = currentTile;
-		currentTile = nextTile;
-		nextTile = null;
 		moving = false;
 		yield return null;
 	}

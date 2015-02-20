@@ -10,6 +10,7 @@ public class BoardInfo {
 	private int minPlayers;
 	private int maxPlayers;
 	private List<TileInfo> tiles;
+	private List<string> districts;
 
 	public string ID {
 		get { return id; }
@@ -44,6 +45,11 @@ public class BoardInfo {
 	public List<TileInfo> Tiles {
 		get { return tiles; }
 	}
+
+	public List<string> Districts {
+		get { return districts; }
+		private set { districts = value; }
+	}
 	
 	public BoardInfo() {}
 
@@ -55,8 +61,12 @@ public class BoardInfo {
 		MinPlayers = minPlayers;
 		MaxPlayers = maxPlayers;
 		this.tiles = new List<TileInfo>();
+		this.districts = new List<string>();
 		foreach (TileInfo tile in tiles) {
 			Tiles.Add(tile);
+			if(!districts.Contains(tile.District)) {
+				districts.Add(tile.District);
+			}
 		}
 	}
 

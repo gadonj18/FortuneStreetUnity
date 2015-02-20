@@ -10,6 +10,7 @@ public class Playing : BaseGameState {
 	private Board board;
 	private Dictionary<int, GameObject> players;
 	private GameObject currentPlayer;
+	private Player playerScript;
 	private int movesLeft = 0;
 	private GameObject ActionMenu;
 	private GameObject Dice;
@@ -20,7 +21,7 @@ public class Playing : BaseGameState {
 		get { return inputEvents; }
 	}
 
-	public Playing() {
+	public void Awake() {
 		currentState = States.ChooseAction;
 		inputEvents = new List<Constants.InputEvents>() {
 			Constants.InputEvents.MouseUp
@@ -33,6 +34,7 @@ public class Playing : BaseGameState {
 	public void RollButton_Click() {
 		ActionMenu.SetActive(false);
 		movesLeft = Random.Range(1, 6);
+		movesLeft = 3;
 		GameObject dice = GameObject.Find("Dice");
 		dice.renderer.enabled = true;
 		dice.GetComponent<DiceSpin>().Roll(movesLeft);
@@ -40,8 +42,7 @@ public class Playing : BaseGameState {
 
 	public void DiceSpun() {
 		Dice.renderer.enabled = false;
-		Player player = (Player)currentPlayer.GetComponent<Player>();
-		paths = board.GetPaths(player.CurrentTile, player.Direction, movesLeft);
+		paths = board.GetPaths(playerScript.CurrentTile, playerScript.Direction, movesLeft);
 		currentState = States.Move;
 	}
 
@@ -52,13 +53,27 @@ public class Playing : BaseGameState {
 	}
 	
 	public void Move_LeftClick(InputEventArgs e) {
-		if(!currentPlayer.GetComponent<Player>().moving) {
+		//Get newPath
+		//If queue
+		//	reverseToPath(newPath)
+		//	AddToQueue(newPath - oldPath)
+		//else
+		//	AddToQueue(newPath)
+		//end
+		//ProcessQueue
+
+		Tile targetTile = GetTileAt(e.MousePosition);
+		if(targetTile != null) {
+			StartCoroutine("MoveToTile", targetTile);
+		}
+
+		/*if(!playerScript.moving) {
 			Tile targetTile = GetTileAt(e.MousePosition);
 			if(targetTile != null) {
 				bool inPath = false;
-				List<Tile> newPath;
+				List<Tile> newPath = new List<Tile>();
 				foreach(List<Tile> path in paths) {
-					newPath = TileInPath(path, targetTile);
+					newPath = TileInPath(playerScript.CurrentTile, path, targetTile);
 					if(newPath != null) {
 						inPath = true;
 						break;
@@ -67,30 +82,107 @@ public class Playing : BaseGameState {
 				if(inPath) {
 					moveList.ClearQueue();
 					moveList.AddQueue(newPath);
-					//currentPlayer.GetComponent<Player>().MoveTo(targetTile);
+					try {
+						StopCoroutine("ProcessMoveQueue");
+					} catch (UnityException ex) {
 
+					}
+					StartCoroutine("ProcessMoveQueue");
+				}
+			}
+		}*/
+	}
+
+	private IEnumerator MoveToTile(Tile targetTile) {
+		List<Tile> path = GetPathTo(targetTile);
+		if(path.Count > 0) {
+			if(moveList.Moves.Count > 0) {
+				Debug.Log("Must reverse");
+				yield return StartCoroutine("ReversetoPath", path);
+			} else {
+				moveList.AddQueue(path);
+			}
+			StartCoroutine("ProcessMoveQueue");
+		}
+	}
+
+	private List<Tile> GetPathTo(Tile targetTile) {
+		List<Tile> newPath = new List<Tile>();
+		foreach(List<Tile> path in paths) {
+			if(TileInPath(path, targetTile)) {
+				foreach(Tile tile in path) {
+					newPath.Add(tile);
+					if(tile == targetTile) {
+						return newPath;
+					}
 				}
 			}
 		}
+		return newPath;
 	}
 
-	private List<Tile> TileInPath(List<Tile> path, Tile targetTile) {
-		bool inPath = false;
-		List<Tile> targetPath = new List<Tile>();
+	private bool TileInPath(List<Tile> path, Tile targetTile) {
 		foreach(Tile tile in path) {
-			targetPath.Add(tile);
 			if(targetTile == tile) {
-				inPath = true;
-				break;
+				return true;
 			}
 		}
-		return (inPath ? targetPath : null);
+		return false;
+	}
+	
+	private IEnumerator ReverseToPath(List<Tile> path) {
+		while(!TileInPath(path, playerScript.CurrentTile)) {
+			Move lastMove = moveList.LastMove();
+			playerScript.MoveTo(lastMove.tile);
+
+			while(playerScript.moving) {
+				yield return null;
+			}
+
+			ReverseMoveChanges(lastMove);
+			moveList.GoBack();
+		}
+
+
+		foreach(Tile nextTile in moveList.Queue) {
+			playerScript.MoveTo(nextTile);
+			
+			while(playerScript.moving) {
+				yield return null;
+			}
+			PassTile(nextTile);
+			moveList.Next();
+		}
+		FinishTurn();
 	}
 
-	private void PlayerMove(PlayerMoveEventArgs e) {
-		Debug.Log("Moved");
+	private IEnumerator ProcessMoveQueue() {
+		List<Tile> queue = new List<Tile>();
+		queue.AddRange(moveList.Queue);
+		foreach(Tile nextTile in queue) {
+			playerScript.MoveTo(nextTile);
+			
+			while(playerScript.moving) {
+				yield return null;
+			}
+			PassTile(nextTile);
+			moveList.Next();
+		}
+		FinishTurn();
 	}
 
+	private void PassTile(Tile nextTile) {
+
+	}
+
+	private void FinishTurn() {
+
+	}
+
+	private void ReverseMoveChanges(Move move) {
+		playerScript.Cash -= move.cash;
+		playerScript.Level -= move.level;
+	}
 
 	private Tile GetTileAt(Vector3 mousePosition) {
 		Ray ray = Camera.main.ScreenPointToRay(mousePosition);
@@ -104,7 +196,7 @@ public class Playing : BaseGameState {
 		return null;
 	}
 	
-	public override IEnumerator Start() {
+	public override IEnumerator Starting() {
 		Game script = this.GameLogic.GetComponent<Game>();
 		BoardInfo info = script.BoardInfo;
 		BuildLevel(info);
@@ -121,7 +213,7 @@ public class Playing : BaseGameState {
 		yield return null;
 	}
 
-	public override IEnumerator End() { yield return null; }
+	public override IEnumerator Ending() { yield return null; }
 	public override void MouseClick(InputEventArgs e) { throw new System.NotImplementedException (); }
 	public override void MouseHeld(InputEventArgs e) { throw new System.NotImplementedException (); }
 	public override void KeyClick(InputEventArgs e) { throw new System.NotImplementedException (); }
@@ -133,6 +225,7 @@ public class Playing : BaseGameState {
 			GameObject newTile = TileFactory.Instance.Build(info.Tiles[i].Code, info.Tiles[i].TileX, info.Tiles[i].TileY, info.Tiles[i].District);
 			board.AddTile(newTile, info.Tiles[i].TileX, info.Tiles[i].TileY);
 		}
+		board.Districts = info.Districts;
 	}
 
 	private void AddPlayers(Dictionary<int,PlayerInfo> playerInfo) {
@@ -145,7 +238,6 @@ public class Playing : BaseGameState {
 			playerScript.Hide();
 			players.Add(entry.Key, player);
 		}
-		Player.PlayerMove += new Player.PlayerMoveHandler(this.PlayerMove);
 	}
 
 	private void SwitchPlayers(int playerNum) {
@@ -153,7 +245,8 @@ public class Playing : BaseGameState {
 			currentPlayer.GetComponent<Player>().Hide();
 		}
 		currentPlayer = players[playerNum];
-		currentPlayer.GetComponent<Player>().Show();
+		playerScript = (Player)currentPlayer.GetComponent<Player>();
+		playerScript.Show();
 		Camera.main.GetComponent<MoveCamera>().Character = currentPlayer;
 	}
 }

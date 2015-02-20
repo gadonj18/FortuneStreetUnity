@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public abstract class BaseGameState : IGameState {
+public abstract class BaseGameState : MonoBehaviour, IGameState {
 	private GameObject gameLogic;
 	public GameObject GameLogic {
 		get {
@@ -26,6 +26,6 @@ public abstract class BaseGameState : IGameState {
 	public abstract void KeyClick(InputEventArgs e);
 	public abstract void KeyHeld(InputEventArgs e);
 	public abstract void KeyUp(InputEventArgs e);
-	public abstract IEnumerator Start();
-	public abstract IEnumerator End();
+	public abstract IEnumerator Starting();
+	public abstract IEnumerator Ending();
 }

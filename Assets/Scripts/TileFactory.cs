@@ -20,7 +20,7 @@ public class TileFactory {
 			Tile.GetComponent<Tile>().BoardX = x;
 			Tile.GetComponent<Tile>().BoardY = y;
 			if(code == Constants.TileCodes.Property && district != null) {
-					Tile.GetComponent<Property>().SetDistrict(district);
+				Tile.GetComponent<Property>().SetDistrict(district);
 			}
 			Tile.transform.position = new Vector3(0.95f * x, 0f, 0.95f * y);
 			return Tile;
