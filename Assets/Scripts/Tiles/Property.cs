@@ -16,6 +16,6 @@ public class Property : Tile {
 
 	public void SetDistrict(string district) {
 		District = district;
-		transform.FindChild("Border").gameObject.renderer.material.color = Config.Instance.GetDistrictColor(district);
+		transform.FindChild("Border").gameObject.GetComponent<Renderer>().material.color = Config.Instance.GetDistrictColor(district);
 	}
 }

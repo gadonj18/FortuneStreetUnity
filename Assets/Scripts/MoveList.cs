@@ -23,11 +23,12 @@ public class MoveList {
 	
 	public void Next() {
 		Move newMove = new Move(queue[0]);
+		moves.Add(newMove);
 		queue.RemoveAt(0);
 	}
 
-	public void FinishMove(int cashChange, KeyValuePair<string, int> stockChange, Constants.Cards? cardChange, int levelChange) {
-		moves[moves.Count - 1].SetChanges(cashChange, stockChange, cardChange, levelChange);
+	public void SaveMove(Move move) {
+		moves.Add(move);
 	}
 
 	public void AddQueue(List<Tile> tiles) {
@@ -55,17 +56,18 @@ public class Move {
 	public Tile tile;
 	public int cash = 0;
 	public KeyValuePair<string, int>? stock = null;
-	public Constants.Cards? card = null;
+	public Dictionary<Constants.Cards, bool> cards = new Dictionary<Constants.Cards, bool>();
 	public int level = 0;
 	
 	public Move(Tile newTile) {
 		tile = newTile;
 	}
-
-	public void SetChanges(int cashChange, KeyValuePair<string, int>? stockChange, Constants.Cards? cardChange, int levelChange) {
-		cash = cashChange;
-		stock = stockChange;
-		card = cardChange;
-		level = levelChange;
+	
+	public void CardGained(Constants.Cards card) {
+		cards[card] = true;
+	}
+	
+	public void CardLost(Constants.Cards card) {
+		cards[card] = true;
 	}
 }

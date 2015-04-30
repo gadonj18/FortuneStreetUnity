@@ -20,7 +20,7 @@ public class StateManager : MonoBehaviour {
 		StartCoroutine("Transition", (Constants.GameStates)System.Enum.Parse(typeof(Constants.GameStates), newState));
 	}
 
-	public IEnumerator Transition(Constants.GameStates newState) {
+	private IEnumerator Transition(Constants.GameStates newState) {
 		yield return null;
 		if (currentState != null) {
 			yield return StartCoroutine(currentState.Ending());
@@ -30,7 +30,7 @@ public class StateManager : MonoBehaviour {
 		currentState = null;
 		state = newState;
 		//currentState = (IGameState)System.Activator.CreateInstance(System.Type.GetType(newState.ToString()));
-		currentState = (IGameState)gameLogic.AddComponent(newState.ToString());
+		currentState = (IGameState)UnityEngineInternal.APIUpdaterRuntimeServices.AddComponent(gameLogic, "Assets/Scripts/StateManager.cs (33,30)", newState.ToString());
 		currentState.GameLogic = gameLogic;
 		RegisterInputEvents();
 		yield return StartCoroutine(currentState.Starting());

@@ -36,12 +36,12 @@ public class Playing : BaseGameState {
 		movesLeft = Random.Range(1, 6);
 		movesLeft = 3;
 		GameObject dice = GameObject.Find("Dice");
-		dice.renderer.enabled = true;
+		dice.GetComponent<Renderer>().enabled = true;
 		dice.GetComponent<DiceSpin>().Roll(movesLeft);
 	}
 
 	public void DiceSpun() {
-		Dice.renderer.enabled = false;
+		Dice.GetComponent<Renderer>().enabled = false;
 		paths = board.GetPaths(playerScript.CurrentTile, playerScript.Direction, movesLeft);
 		currentState = States.Move;
 	}
@@ -53,56 +53,46 @@ public class Playing : BaseGameState {
 	}
 	
 	public void Move_LeftClick(InputEventArgs e) {
-		//Get newPath
-		//If queue
-		//	reverseToPath(newPath)
-		//	AddToQueue(newPath - oldPath)
-		//else
-		//	AddToQueue(newPath)
-		//end
-		//ProcessQueue
-
 		Tile targetTile = GetTileAt(e.MousePosition);
-		if(targetTile != null) {
+		if(targetTile != null && targetTile != playerScript.CurrentTile) {
 			StartCoroutine("MoveToTile", targetTile);
 		}
-
-		/*if(!playerScript.moving) {
-			Tile targetTile = GetTileAt(e.MousePosition);
-			if(targetTile != null) {
-				bool inPath = false;
-				List<Tile> newPath = new List<Tile>();
-				foreach(List<Tile> path in paths) {
-					newPath = TileInPath(playerScript.CurrentTile, path, targetTile);
-					if(newPath != null) {
-						inPath = true;
-						break;
-					}
-				}
-				if(inPath) {
-					moveList.ClearQueue();
-					moveList.AddQueue(newPath);
-					try {
-						StopCoroutine("ProcessMoveQueue");
-					} catch (UnityException ex) {
-
-					}
-					StartCoroutine("ProcessMoveQueue");
-				}
-			}
-		}*/
 	}
 
 	private IEnumerator MoveToTile(Tile targetTile) {
 		List<Tile> path = GetPathTo(targetTile);
 		if(path.Count > 0) {
-			if(moveList.Moves.Count > 0) {
-				Debug.Log("Must reverse");
-				yield return StartCoroutine("ReversetoPath", path);
-			} else {
-				moveList.AddQueue(path);
+			while(playerScript.moving) {
+				yield return null;
 			}
-			StartCoroutine("ProcessMoveQueue");
+			StopCoroutine("ReverseToPath");
+			StopCoroutine("ReverseToTile");
+			StopCoroutine("ProcessMoveQueue");
+
+			//Tile you're on is NOT in the new path
+			if(moveList.Moves.Count > 0 && !TileInPath(path, playerScript.CurrentTile)) {
+				//Reverse to intersect with the new path
+				yield return StartCoroutine("ReverseToPath", path);
+			}
+
+			//Reverse in current path if already past target
+			if(path.Count < moveList.Moves.Count) {
+				yield return StartCoroutine("ReverseToTile", targetTile);
+			} else {
+				//Remove any already moved to tiles from the new path
+				for(int i = 0; i < moveList.Moves.Count; i++) {
+					if(moveList.Moves[i].tile == playerScript.CurrentTile) {
+						break;
+					}
+					path.RemoveAt(0);
+				}
+
+				//Add the remainder of the path to the queue
+				moveList.AddQueue(path);
+
+				//And move to the queue
+				StartCoroutine("ProcessMoveQueue");
+			}
 		}
 	}
 
@@ -131,29 +121,47 @@ public class Playing : BaseGameState {
 	}
 	
 	private IEnumerator ReverseToPath(List<Tile> path) {
-		while(!TileInPath(path, playerScript.CurrentTile)) {
-			Move lastMove = moveList.LastMove();
+		for(int i = moveList.Moves.Count; i >= 0; i--) {
+			if(TileInPath(path, playerScript.CurrentTile)) {
+				break;
+			}
+
+			Move lastMove = moveList.Moves[i];
 			playerScript.MoveTo(lastMove.tile);
 
 			while(playerScript.moving) {
 				yield return null;
 			}
-
+			
 			ReverseMoveChanges(lastMove);
 			moveList.GoBack();
 		}
+	}
 
+	private IEnumerator ReverseToTile(Tile target) {
+		for(int i = moveList.Moves.Count - 1; i >= 0; i--) {
+			if(moveList.Moves[i].tile == target) {
+				break;
+			}
 
-		foreach(Tile nextTile in moveList.Queue) {
-			playerScript.MoveTo(nextTile);
+			Move lastMove = moveList.Moves[i];
+			playerScript.MoveTo(lastMove.tile);
 			
 			while(playerScript.moving) {
 				yield return null;
 			}
-			PassTile(nextTile);
-			moveList.Next();
+			
+			ReverseMoveChanges(lastMove);
+			moveList.GoBack();
 		}
-		FinishTurn();
+	}
+	
+	private void ReverseMoveChanges(Move move) {
+		playerScript.Cash -= move.cash;
+		playerScript.Level -= move.level;
+		//foreach(KeyValuePair<Constants.Cards, bool> cardChange in move.cards) {
+
+		//}
 	}
 
 	private IEnumerator ProcessMoveQueue() {
@@ -170,18 +178,13 @@ public class Playing : BaseGameState {
 		}
 		FinishTurn();
 	}
-
+	
 	private void PassTile(Tile nextTile) {
-
+		
 	}
-
+	
 	private void FinishTurn() {
-
-	}
-
-	private void ReverseMoveChanges(Move move) {
-		playerScript.Cash -= move.cash;
-		playerScript.Level -= move.level;
+		
 	}
 
 	private Tile GetTileAt(Vector3 mousePosition) {
@@ -207,7 +210,7 @@ public class Playing : BaseGameState {
 		ActionMenu = GameObject.Find("ActionMenu");
 		ActionMenu.SetActive(true);
 		Dice = GameObject.Find("Dice");
-		Dice.renderer.enabled = false;
+		Dice.GetComponent<Renderer>().enabled = false;
 		DiceSpin.DiceSpun += new DiceSpin.DiceSpinHandler(this.DiceSpun);
 		moveList = new MoveList();
 		yield return null;

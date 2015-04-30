@@ -5,7 +5,6 @@ using System.Collections.Generic;
 public class Player : MonoBehaviour {
 	private string playerName;
 	private Color color;
-	private Tile lastTile;
 	private Tile currentTile;
 	private Constants.Directions direction = Constants.Directions.Any;
 	private int cash;
@@ -30,11 +29,6 @@ public class Player : MonoBehaviour {
 	public Color Color {
 		get { return color; }
 		set { color = value; }
-	}
-
-	public Tile LastTile {
-		get { return lastTile; }
-		set { lastTile = value; }
 	}
 
 	public Tile CurrentTile {
@@ -91,8 +85,6 @@ public class Player : MonoBehaviour {
 	public void MoveTo(Tile tile) {
 		moving = true;
 		StartCoroutine("MoveToTarget", tile);
-		lastTile = currentTile;
-		currentTile = tile;
 	}
 
 	private IEnumerator MoveToTarget(Tile targetTile) {
@@ -108,6 +100,7 @@ public class Player : MonoBehaviour {
 		if(PlayerMove != null) {
 			PlayerMove(new PlayerMoveEventArgs(targetTile));
 		}
+		currentTile = targetTile;
 		moving = false;
 		yield return null;
 	}
