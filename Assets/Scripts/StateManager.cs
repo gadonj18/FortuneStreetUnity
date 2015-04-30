@@ -30,7 +30,8 @@ public class StateManager : MonoBehaviour {
 		currentState = null;
 		state = newState;
 		//currentState = (IGameState)System.Activator.CreateInstance(System.Type.GetType(newState.ToString()));
-		currentState = (IGameState)UnityEngineInternal.APIUpdaterRuntimeServices.AddComponent(gameLogic, "Assets/Scripts/StateManager.cs (33,30)", newState.ToString());
+		//currentState = (IGameState)UnityEngineInternal.APIUpdaterRuntimeServices.AddComponent(gameLogic, "Assets/Scripts/StateManager.cs (33,30)", newState.ToString());
+		currentState = (IGameState)gameLogic.AddComponent(System.Type.GetType(newState.ToString()));
 		currentState.GameLogic = gameLogic;
 		RegisterInputEvents();
 		yield return StartCoroutine(currentState.Starting());
