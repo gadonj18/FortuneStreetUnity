@@ -121,7 +121,6 @@ public class Board {
 	}
 	
 	public List<List<Tile>> GetPaths(Tile tile, Constants.Directions direction, int movesLeft) {
-		//Debug.Log(tile.name + " (" + tile.BoardX + ", " + tile.BoardY + ") " + movesLeft);
 		List<List<Tile>> newPaths = new List<List<Tile>>();
 		foreach(Constants.Directions dir in tile.Dirs) {
 			if(dir != direction) {
@@ -141,5 +140,41 @@ public class Board {
 			}
 		}
 		return newPaths;
+	}
+
+	public Tile GetTileAt(Vector3 mousePosition) {
+		Ray ray = Camera.main.ScreenPointToRay(mousePosition);
+		RaycastHit hit;
+		if(Physics.Raycast(ray, out hit, Mathf.Infinity)) {
+			string name = hit.collider.gameObject.name;
+			if(name.Substring(name.Length - 11, 4) == "Tile") {
+				return hit.collider.gameObject.GetComponent<Tile>();
+			}
+		}
+		return null;
+	}
+
+	public List<Tile> GetPathToTile(List<List<Tile>> paths, Tile targetTile) {
+		List<Tile> newPath = new List<Tile>();
+		foreach(List<Tile> path in paths) {
+			if(TileInPath(path, targetTile)) {
+				foreach(Tile tile in path) {
+					newPath.Add(tile);
+					if(tile == targetTile) {
+						return newPath;
+					}
+				}
+			}
+		}
+		return newPath;
+	}
+
+	public bool TileInPath(List<Tile> path, Tile targetTile) {
+		foreach(Tile tile in path) {
+			if(targetTile == tile) {
+				return true;
+			}
+		}
+		return false;
 	}
 }

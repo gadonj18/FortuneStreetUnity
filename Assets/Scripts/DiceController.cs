@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public class DiceSpin : MonoBehaviour {
+public class DiceController : MonoBehaviour {
 	public delegate void DiceSpinHandler();
 	public static event DiceSpinHandler DiceSpun;
 	private List<Quaternion> rotations = new List<Quaternion>() {
@@ -14,9 +14,11 @@ public class DiceSpin : MonoBehaviour {
 		Quaternion.Euler(new Vector3(150f, 0f, 0f))
 	};
 
+	private Vector3 origScale = new Vector3(75f, 75f, 75f);
+	private Vector3 recessScale = new Vector3(0f, 0f, 0f);
+
 	private float rollSpeed = 500f;
 	private int rollNum;
-	private bool spinning = false;
 	private float x = 0f;
 	private float y = 1f;
 	private float z = 0.5f;
@@ -24,16 +26,19 @@ public class DiceSpin : MonoBehaviour {
 	private bool yUp = true;
 	private bool zUp = true;
 
-	public void Roll(int num) {
+	public IEnumerator Roll(int num) {
 		rollNum = num;
-		spinning = true;
-		StartCoroutine("Spin");
-		Invoke("StopSpin", 3f);
+		yield return StartCoroutine("Spin");
+		yield return StartCoroutine("SpinToRoll");
+		yield return new WaitForSeconds(1f);
+		yield return StartCoroutine("RecessDice");
+		if(DiceSpun != null) DiceSpun();
 	}
 
 	private IEnumerator Spin() {
 		rollSpeed = 500f;
-		while(spinning) {
+		float t = 0;
+		while(t < 3) {
 			transform.RotateAround(transform.position, new Vector3(x, y * 0.2f, z * 0.8f), rollSpeed * Time.deltaTime);
 			x += (xUp ? 0.06f : -0.06f);
 			y += (yUp ? 0.04f : -0.04f);
@@ -44,16 +49,10 @@ public class DiceSpin : MonoBehaviour {
 			if(x <= 0f) { xUp = true; }
 			if(y <= 0f) { yUp = true; }
 			if(z <= 0f) { zUp = true; }
+			t += Time.deltaTime;
 			yield return null;
 		}
 	}
-	
-	private void StopSpin() {
-		spinning = false;
-		StopCoroutine("Spin");
-		StartCoroutine("SpinToRoll");
-	}
-	
 	private IEnumerator SpinToRoll() {
 		rollSpeed = 200f;
 		while(transform.rotation != rotations[rollNum - 1]) {
@@ -61,16 +60,14 @@ public class DiceSpin : MonoBehaviour {
 			if(rollSpeed >= 10f) rollSpeed -= 1f;
 			yield return null;
 		}
-		spinning = false;
-		yield return new WaitForSeconds(1f);
-		if(DiceSpun != null) DiceSpun();
-		//StartCoroutine("RecessDice");
 	}
 
 	private IEnumerator RecessDice() {
-		Vector3 targetPos = new Vector3();
-		Vector3 targetScale = new Vector3();
-		while(transform.position != targetPos) {
+		float t = 0f;
+		float totalTime = 1f;
+		while(t < totalTime) {
+			transform.localScale = Vector3.Lerp(origScale, recessScale, t / totalTime);
+			t += Time.deltaTime;
 			yield return null;
 		}
 	}

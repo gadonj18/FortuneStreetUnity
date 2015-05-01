@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public class Player : MonoBehaviour {
+public class PlayerController : MonoBehaviour {
 	private string playerName;
 	private Color color;
 	private Tile currentTile;
@@ -81,28 +81,28 @@ public class Player : MonoBehaviour {
 	public void Show() {
 		this.transform.Find("Model").GetComponent<SkinnedMeshRenderer>().enabled = true;
 	}
-	
-	public void MoveTo(Tile tile) {
-		moving = true;
-		StartCoroutine("MoveToTarget", tile);
-	}
 
-	private IEnumerator MoveToTarget(Tile targetTile) {
+	public IEnumerator MoveToTile(Tile targetTile) {
+		Debug.Log("Moving to (" + targetTile.BoardX + ", " + targetTile.BoardY + ")");
+		moving = true;
 		Vector3 targetPos = new Vector3(targetTile.transform.position.x, transform.position.y, targetTile.transform.position.z - 0.491f);
 		GetComponent<Animator>().Play(leftHopNext ? hopLeftHash : hopRightHash);
 		leftHopNext = !leftHopNext;
 
 		transform.rotation = Quaternion.LookRotation(targetPos - transform.position) * Quaternion.Euler(-15f, 0f, 0f);
-		while(transform.position != targetPos) {
-			transform.position = Vector3.MoveTowards (transform.position, targetPos, Time.deltaTime * MoveSpeed);
+		float t = 0f;
+		float totalTime = 0.8f;
+		Vector3 startPos = transform.position;
+		while(t < totalTime) {
+			transform.position = Vector3.Lerp(startPos, targetPos, t / totalTime);
+			t += Time.deltaTime;
 			yield return null;
-		}
-		if(PlayerMove != null) {
-			PlayerMove(new PlayerMoveEventArgs(targetTile));
 		}
 		currentTile = targetTile;
 		moving = false;
-		yield return null;
+		if(PlayerMove != null) {
+			PlayerMove(new PlayerMoveEventArgs(targetTile));
+		}
 	}
 
 	void OnHopEnd() {

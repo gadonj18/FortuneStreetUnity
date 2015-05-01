@@ -3,49 +3,61 @@ using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
 
+/// <summary>
+/// The main game state that controls all aspects of players' turns
+/// </summary>
 public class Playing : BaseGameState {
 	private enum States { ChooseAction, Roll, Move, Confirm };
 	private States currentState;
-	private ICollection<Constants.InputEvents> inputEvents;
 	private Board board;
 	private Dictionary<int, GameObject> players;
-	private GameObject currentPlayer;
-	private Player playerScript;
+	private GameObject playerObj;
+	private PlayerController playerScript;
 	private int movesLeft = 0;
-	private GameObject ActionMenu;
-	private GameObject Dice;
-	private List<List<Tile>> paths;
+	private GameObject dice;
+	private List<List<Tile>> possiblePaths;
 	private MoveList moveList;
-
+	private GameObject ActionMenu;
+	/// <summary>
+	/// List of input events we wish to register with the input manager
+	/// </summary>
 	public override ICollection<Constants.InputEvents> InputEvents {
 		get { return inputEvents; }
 	}
+	private ICollection<Constants.InputEvents> inputEvents = new List<Constants.InputEvents>() {
+		Constants.InputEvents.MouseUp
+	};
 
 	public void Awake() {
 		currentState = States.ChooseAction;
-		inputEvents = new List<Constants.InputEvents>() {
-			Constants.InputEvents.MouseUp
-		};
 		board = new Board();
 		players = new Dictionary<int, GameObject>();
-		currentPlayer = null;
+		playerObj = null;
 	}
 
+	/// <summary>
+	/// UI Event called when the Roll button is clicked from the main Action Menu
+	/// </summary>
 	public void RollButton_Click() {
 		ActionMenu.SetActive(false);
 		movesLeft = Random.Range(1, 6);
-		movesLeft = 3;
-		GameObject dice = GameObject.Find("Dice");
+		movesLeft = 6;
 		dice.GetComponent<Renderer>().enabled = true;
-		dice.GetComponent<DiceSpin>().Roll(movesLeft);
+		StartCoroutine(dice.GetComponent<DiceController>().Roll(movesLeft));
 	}
 
 	public void DiceSpun() {
-		Dice.GetComponent<Renderer>().enabled = false;
-		paths = board.GetPaths(playerScript.CurrentTile, playerScript.Direction, movesLeft);
+		dice.GetComponent<Renderer>().enabled = false;
+		possiblePaths = board.GetPaths(playerScript.CurrentTile, playerScript.Direction, movesLeft);
+		foreach(List<Tile> path in possiblePaths) {
+			path.Insert(0, playerScript.CurrentTile);
+		}
 		currentState = States.Move;
 	}
 
+	/// <summary>
+	/// Called by the Input Manager when the user clicks the mouse. Hands off click to method with the name "[STATE]_[MOUSECODE]Click()", e.g. "Move_LeftClick()"
+	/// </summary>
 	public override void MouseUp(InputEventArgs e) {
 		string[] mouseButton = new string[] { "Left", "Middle", "Right" };
 		System.Reflection.MethodInfo method = typeof(Playing).GetMethod(currentState.ToString() + "_" + mouseButton[e.MouseCode] + "Click");
@@ -53,81 +65,64 @@ public class Playing : BaseGameState {
 	}
 	
 	public void Move_LeftClick(InputEventArgs e) {
-		Tile targetTile = GetTileAt(e.MousePosition);
+		Tile targetTile = board.GetTileAt(e.MousePosition);
 		if(targetTile != null && targetTile != playerScript.CurrentTile) {
 			StartCoroutine("MoveToTile", targetTile);
 		}
 	}
 
+	/// <summary>
+	/// Upon clicking a tile, MoveToTile will determine which path the player must take to get to the target tile and build a list of moves.
+	/// </summary>
+	/// <returns>The to tile.</returns>
+	/// <param name="targetTile">Target tile.</param>
 	private IEnumerator MoveToTile(Tile targetTile) {
-		List<Tile> path = GetPathTo(targetTile);
-		if(path.Count > 0) {
-			while(playerScript.moving) {
-				yield return null;
+		List<Tile> path = board.GetPathToTile(possiblePaths, targetTile);
+		if(path.Count == 0) yield break;
+
+			string log = "";
+			foreach(Tile tile in path) {
+				log += "(" + tile.BoardX + ", " + tile.BoardY + "), ";
 			}
-			StopCoroutine("ReverseToPath");
-			StopCoroutine("ReverseToTile");
-			StopCoroutine("ProcessMoveQueue");
+			Debug.Log(log);
 
-			//Tile you're on is NOT in the new path
-			if(moveList.Moves.Count > 0 && !TileInPath(path, playerScript.CurrentTile)) {
-				//Reverse to intersect with the new path
-				yield return StartCoroutine("ReverseToPath", path);
+		while(playerScript.moving) {
+			yield return null;
+		}
+		StopCoroutine("ReverseToPath");
+		StopCoroutine("ReverseToTile");
+		StopCoroutine("ProcessMoveQueue");
+
+		//Tile you're on is NOT in the new path
+		if(moveList.Moves.Count > 0 && !board.TileInPath(path, playerScript.CurrentTile)) {
+			//Reverse to intersect with the new path
+			yield return StartCoroutine("ReverseToPath", path);
+		}
+
+		//Reverse in current path if already past target
+		if(path.Count < moveList.Moves.Count) {
+			yield return StartCoroutine("ReverseToTile", targetTile);
+		} else {
+			//Add remainder of path that has not already been moved to to the queue
+			List<Tile> newQueue = new List<Tile>();
+			for(int i = moveList.Moves.Count; i < path.Count; i++) {
+				newQueue.Add(path[i]);
 			}
+			moveList.AddQueue(newQueue);
 
-			//Reverse in current path if already past target
-			if(path.Count < moveList.Moves.Count) {
-				yield return StartCoroutine("ReverseToTile", targetTile);
-			} else {
-				//Remove any already moved to tiles from the new path
-				for(int i = 0; i < moveList.Moves.Count; i++) {
-					if(moveList.Moves[i].tile == playerScript.CurrentTile) {
-						break;
-					}
-					path.RemoveAt(0);
-				}
-
-				//Add the remainder of the path to the queue
-				moveList.AddQueue(path);
-
-				//And move to the queue
-				StartCoroutine("ProcessMoveQueue");
-			}
+			//And move to the queue
+			StartCoroutine("ProcessMoveQueue");
 		}
 	}
 
-	private List<Tile> GetPathTo(Tile targetTile) {
-		List<Tile> newPath = new List<Tile>();
-		foreach(List<Tile> path in paths) {
-			if(TileInPath(path, targetTile)) {
-				foreach(Tile tile in path) {
-					newPath.Add(tile);
-					if(tile == targetTile) {
-						return newPath;
-					}
-				}
-			}
-		}
-		return newPath;
-	}
-
-	private bool TileInPath(List<Tile> path, Tile targetTile) {
-		foreach(Tile tile in path) {
-			if(targetTile == tile) {
-				return true;
-			}
-		}
-		return false;
-	}
-	
 	private IEnumerator ReverseToPath(List<Tile> path) {
-		for(int i = moveList.Moves.Count; i >= 0; i--) {
-			if(TileInPath(path, playerScript.CurrentTile)) {
+		for(int i = moveList.Moves.Count - 1; i >= 0; i--) {
+			if(board.TileInPath(path, playerScript.CurrentTile)) {
 				break;
 			}
 
 			Move lastMove = moveList.Moves[i];
-			playerScript.MoveTo(lastMove.tile);
+			yield return StartCoroutine(playerScript.MoveToTile(lastMove.tile));
 
 			while(playerScript.moving) {
 				yield return null;
@@ -145,7 +140,7 @@ public class Playing : BaseGameState {
 			}
 
 			Move lastMove = moveList.Moves[i];
-			playerScript.MoveTo(lastMove.tile);
+			yield return StartCoroutine(playerScript.MoveToTile(lastMove.tile));
 			
 			while(playerScript.moving) {
 				yield return null;
@@ -168,7 +163,7 @@ public class Playing : BaseGameState {
 		List<Tile> queue = new List<Tile>();
 		queue.AddRange(moveList.Queue);
 		foreach(Tile nextTile in queue) {
-			playerScript.MoveTo(nextTile);
+			yield return StartCoroutine(playerScript.MoveToTile(nextTile));
 			
 			while(playerScript.moving) {
 				yield return null;
@@ -187,17 +182,7 @@ public class Playing : BaseGameState {
 		
 	}
 
-	private Tile GetTileAt(Vector3 mousePosition) {
-		Ray ray = Camera.main.ScreenPointToRay(mousePosition);
-		RaycastHit hit;
-		if(Physics.Raycast(ray, out hit, Mathf.Infinity)) {
-			string name = hit.collider.gameObject.name;
-			if(name.Substring(name.Length - 11, 4) == "Tile") {
-				return hit.collider.gameObject.GetComponent<Tile>();
-			}
-		}
-		return null;
-	}
+
 	
 	public override IEnumerator Starting() {
 		Game script = this.GameLogic.GetComponent<Game>();
@@ -206,12 +191,12 @@ public class Playing : BaseGameState {
 		board.BuildPaths();
 		AddPlayers(Config.Instance.playerInfo);
 		SwitchPlayers(1);
-		Camera.main.GetComponent<MoveCamera>().Character = currentPlayer;
+		Camera.main.GetComponent<MoveCamera>().Character = playerObj;
 		ActionMenu = GameObject.Find("ActionMenu");
 		ActionMenu.SetActive(true);
-		Dice = GameObject.Find("Dice");
-		Dice.GetComponent<Renderer>().enabled = false;
-		DiceSpin.DiceSpun += new DiceSpin.DiceSpinHandler(this.DiceSpun);
+		dice = GameObject.Find("Dice");
+		dice.GetComponent<Renderer>().enabled = false;
+		DiceController.DiceSpun += new DiceController.DiceSpinHandler(this.DiceSpun);
 		moveList = new MoveList();
 		yield return null;
 	}
@@ -234,7 +219,7 @@ public class Playing : BaseGameState {
 	private void AddPlayers(Dictionary<int,PlayerInfo> playerInfo) {
 		foreach(KeyValuePair<int, PlayerInfo> entry in playerInfo) {
 			GameObject player = (GameObject)GameObject.Instantiate(Resources.Load("Prefabs/Characters/LeftShark"));
-			Player playerScript = (Player)player.GetComponent<Player>();
+			PlayerController playerScript = (PlayerController)player.GetComponent<PlayerController>();
 			playerScript.CurrentTile = board.bank.GetComponent<Bank>();
 			playerScript.PlayerName = entry.Value.Name;
 			playerScript.Color = entry.Value.Color;
@@ -244,12 +229,12 @@ public class Playing : BaseGameState {
 	}
 
 	private void SwitchPlayers(int playerNum) {
-		if(currentPlayer != null) {
-			currentPlayer.GetComponent<Player>().Hide();
+		if(playerObj != null) {
+			playerObj.GetComponent<PlayerController>().Hide();
 		}
-		currentPlayer = players[playerNum];
-		playerScript = (Player)currentPlayer.GetComponent<Player>();
+		playerObj = players[playerNum];
+		playerScript = playerObj.GetComponent<PlayerController>();
 		playerScript.Show();
-		Camera.main.GetComponent<MoveCamera>().Character = currentPlayer;
+		Camera.main.GetComponent<MoveCamera>().Character = playerObj;
 	}
 }
