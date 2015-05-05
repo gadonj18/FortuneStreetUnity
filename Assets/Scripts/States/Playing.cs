@@ -7,7 +7,7 @@ using System.Collections.Generic;
 /// The main game state that controls all aspects of players' turns
 /// </summary>
 public class Playing : BaseGameState {
-	private enum States { ChooseAction, Roll, Move, Confirm };
+	private enum States { ChooseAction, Roll, Move, Confirm, FinishTurn };
 	private States currentState;
 	private Board board;
 	private Dictionary<int, GameObject> players;
@@ -15,9 +15,12 @@ public class Playing : BaseGameState {
 	private PlayerController playerScript;
 	private int movesLeft = 0;
 	private GameObject dice;
+	private GameObject UIDiceMoves;
+	private Sprite[] diceSprites;
 	private List<List<Tile>> possiblePaths;
 	private MoveList moveList;
 	private GameObject ActionMenu;
+	private GameObject YesNoMenu;
 	/// <summary>
 	/// List of input events we wish to register with the input manager
 	/// </summary>
@@ -33,6 +36,13 @@ public class Playing : BaseGameState {
 		board = new Board();
 		players = new Dictionary<int, GameObject>();
 		playerObj = null;
+		diceSprites = Resources.LoadAll<Sprite>(@"Sprites/UIDice");
+	}
+
+	public void Update() {
+		if(currentState == States.Move && movesLeft > 0) {
+			UIDiceMoves.GetComponent<Image>().sprite = diceSprites[movesLeft - 1];
+		}
 	}
 
 	/// <summary>
@@ -45,9 +55,23 @@ public class Playing : BaseGameState {
 		dice.GetComponent<Renderer>().enabled = true;
 		StartCoroutine(dice.GetComponent<DiceController>().Roll(movesLeft));
 	}
+	
+	public void YesButton_Click() {
+		currentState = States.FinishTurn;
+	}
+	
+	public void NoButton_Click() {
+		currentState = States.Move;
+		StartCoroutine("MoveToTile", moveList.Moves[moveList.Moves.Count - 1].fromTile);
+		UIDiceMoves.GetComponent<Image>().sprite = diceSprites[0];
+		UIDiceMoves.GetComponent<Image>().enabled = true;
+		YesNoMenu.SetActive(false);
+	}
 
 	public void DiceSpun() {
 		dice.GetComponent<Renderer>().enabled = false;
+		UIDiceMoves.GetComponent<Image>().sprite = diceSprites[movesLeft - 1];
+		UIDiceMoves.GetComponent<Image>().enabled = true;
 		possiblePaths = board.GetPaths(playerScript.CurrentTile, playerScript.Direction, movesLeft);
 		foreach(List<Tile> path in possiblePaths) {
 			path.Insert(0, playerScript.CurrentTile);
@@ -77,15 +101,11 @@ public class Playing : BaseGameState {
 	/// <returns>The to tile.</returns>
 	/// <param name="targetTile">Target tile.</param>
 	private IEnumerator MoveToTile(Tile targetTile) {
+		//Path from turn's starting tile to targetTile, not neccessarily full path containing targetTile
 		List<Tile> path = board.GetPathToTile(possiblePaths, targetTile);
 		if(path.Count == 0) yield break;
 
-			string log = "";
-			foreach(Tile tile in path) {
-				log += "(" + tile.BoardX + ", " + tile.BoardY + "), ";
-			}
-			Debug.Log(log);
-
+		//Let the player finish moving before interrupting
 		while(playerScript.moving) {
 			yield return null;
 		}
@@ -99,20 +119,20 @@ public class Playing : BaseGameState {
 			yield return StartCoroutine("ReverseToPath", path);
 		}
 
-		//Reverse in current path if already past target
-		if(path.Count < moveList.Moves.Count) {
-			yield return StartCoroutine("ReverseToTile", targetTile);
-		} else {
+		if(path.Count > moveList.Moves.Count) {
 			//Add remainder of path that has not already been moved to to the queue
 			List<Tile> newQueue = new List<Tile>();
 			for(int i = moveList.Moves.Count; i < path.Count; i++) {
-				newQueue.Add(path[i]);
+				if(path[i] != playerScript.CurrentTile) {
+					newQueue.Add(path[i]);
+				}
 			}
 			moveList.AddQueue(newQueue);
 
 			//And move to the queue
-			StartCoroutine("ProcessMoveQueue");
+			yield return StartCoroutine("ProcessMoveQueue");
 		}
+		if(movesLeft == 0) FinishMove();
 	}
 
 	private IEnumerator ReverseToPath(List<Tile> path) {
@@ -122,68 +142,47 @@ public class Playing : BaseGameState {
 			}
 
 			Move lastMove = moveList.Moves[i];
-			yield return StartCoroutine(playerScript.MoveToTile(lastMove.tile));
-
-			while(playerScript.moving) {
-				yield return null;
-			}
-			
+			yield return StartCoroutine(playerScript.MoveToTile(lastMove.fromTile));
 			ReverseMoveChanges(lastMove);
-			moveList.GoBack();
-		}
-	}
-
-	private IEnumerator ReverseToTile(Tile target) {
-		for(int i = moveList.Moves.Count - 1; i >= 0; i--) {
-			if(moveList.Moves[i].tile == target) {
-				break;
-			}
-
-			Move lastMove = moveList.Moves[i];
-			yield return StartCoroutine(playerScript.MoveToTile(lastMove.tile));
-			
-			while(playerScript.moving) {
-				yield return null;
-			}
-			
-			ReverseMoveChanges(lastMove);
-			moveList.GoBack();
+			movesLeft++;
 		}
 	}
 	
 	private void ReverseMoveChanges(Move move) {
 		playerScript.Cash -= move.cash;
 		playerScript.Level -= move.level;
-		//foreach(KeyValuePair<Constants.Cards, bool> cardChange in move.cards) {
-
-		//}
+		foreach(KeyValuePair<Constants.Cards, bool> cardChange in move.cards) {
+			playerScript.Cards[cardChange.Key] = !cardChange.Value;
+		}
+		if(move.stock != null) playerScript.Stocks[((KeyValuePair<string, int>)move.stock).Key] -= ((KeyValuePair<string, int>)move.stock).Value;
+		moveList.GoBack();
 	}
 
 	private IEnumerator ProcessMoveQueue() {
 		List<Tile> queue = new List<Tile>();
 		queue.AddRange(moveList.Queue);
 		foreach(Tile nextTile in queue) {
+			Move newMove = new Move();
+			newMove.fromTile = playerScript.CurrentTile;
+			newMove.toTile = nextTile;
 			yield return StartCoroutine(playerScript.MoveToTile(nextTile));
-			
-			while(playerScript.moving) {
-				yield return null;
-			}
-			PassTile(nextTile);
-			moveList.Next();
+			movesLeft--;
+			PassTile(newMove);
+			moveList.Next(newMove);
 		}
-		FinishTurn();
 	}
 	
-	private void PassTile(Tile nextTile) {
+	private void PassTile(Move move) {
 		
 	}
 	
-	private void FinishTurn() {
-		
+	private void FinishMove() {
+		UIDiceMoves.GetComponent<Image>().enabled = false;
+		YesNoMenu.transform.FindChild("Title").FindChild("Text").GetComponent<Text>().text = "Stop here?";
+		YesNoMenu.SetActive(true);
+		currentState = States.Confirm;
 	}
 
-
-	
 	public override IEnumerator Starting() {
 		Game script = this.GameLogic.GetComponent<Game>();
 		BoardInfo info = script.BoardInfo;
@@ -194,9 +193,13 @@ public class Playing : BaseGameState {
 		Camera.main.GetComponent<MoveCamera>().Character = playerObj;
 		ActionMenu = GameObject.Find("ActionMenu");
 		ActionMenu.SetActive(true);
+		YesNoMenu = GameObject.Find("YesNoMenu");
+		YesNoMenu.SetActive(false);
 		dice = GameObject.Find("Dice");
 		dice.GetComponent<Renderer>().enabled = false;
 		DiceController.DiceSpun += new DiceController.DiceSpinHandler(this.DiceSpun);
+		UIDiceMoves = GameObject.Find("DiceMoves");
+		UIDiceMoves.GetComponent<Image>().enabled = false;
 		moveList = new MoveList();
 		yield return null;
 	}

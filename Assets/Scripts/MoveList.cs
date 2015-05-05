@@ -21,8 +21,7 @@ public class MoveList {
 		private set { moves = value; }
 	}
 	
-	public void Next() {
-		Move newMove = new Move(queue[0]);
+	public void Next(Move newMove) {
 		moves.Add(newMove);
 		queue.RemoveAt(0);
 	}
@@ -53,15 +52,12 @@ public class MoveList {
 }
 
 public class Move {
-	public Tile tile;
+	public Tile fromTile;
+	public Tile toTile;
 	public int cash = 0;
 	public KeyValuePair<string, int>? stock = null;
 	public Dictionary<Constants.Cards, bool> cards = new Dictionary<Constants.Cards, bool>();
 	public int level = 0;
-	
-	public Move(Tile newTile) {
-		tile = newTile;
-	}
 	
 	public void CardGained(Constants.Cards card) {
 		cards[card] = true;

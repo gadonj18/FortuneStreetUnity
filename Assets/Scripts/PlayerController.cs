@@ -83,7 +83,6 @@ public class PlayerController : MonoBehaviour {
 	}
 
 	public IEnumerator MoveToTile(Tile targetTile) {
-		Debug.Log("Moving to (" + targetTile.BoardX + ", " + targetTile.BoardY + ")");
 		moving = true;
 		Vector3 targetPos = new Vector3(targetTile.transform.position.x, transform.position.y, targetTile.transform.position.z - 0.491f);
 		GetComponent<Animator>().Play(leftHopNext ? hopLeftHash : hopRightHash);
