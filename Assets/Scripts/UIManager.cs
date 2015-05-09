@@ -40,7 +40,7 @@ public class UIManager : Singleton<UIManager> {
 		yesNoMenu = GameObject.Find("/UIOverlay/YesNoMenu");
 		unownedPropertyInfo = GameObject.Find("/UIOverlay/UnownedPropertyInfo");
 		playerScores = GameObject.Find("/UIOverlay/PlayerScores");
-		message = GameObject.Find("/UIOverlay/message");
+		message = GameObject.Find("/UIOverlay/Message");
 	}
 
 	public delegate void UIButtonHandler(UIEventArgs e);
