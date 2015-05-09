@@ -9,6 +9,7 @@ using System.Collections.Generic;
 public class Playing : BaseGameState {
 	private enum States { ChooseAction, Roll, Move, Confirm, FinishTurn };
 	private States currentState;
+	public UIManager UIManager;
 	private Board board;
 	private Dictionary<int, GameObject> players;
 	private GameObject playerObj;
@@ -54,7 +55,7 @@ public class Playing : BaseGameState {
 	/// <summary>
 	/// UI Event called when the Roll button is clicked from the main Action Menu
 	/// </summary>
-	public void RollButton_Click() {
+	public void RollButton_Click(UIEventArgs e) {
 		ActionMenu.SetActive(false);
 		movesLeft = Random.Range(1, 6);
 		movesLeft = 1;
@@ -62,15 +63,19 @@ public class Playing : BaseGameState {
 		StartCoroutine(dice.GetComponent<DiceController>().Roll(movesLeft));
 	}
 	
-	public void YesButton_Click() {
+	public void FinishMoveYes_Click(UIEventArgs e) {
 		YesNoMenu.SetActive(false);
+		UIManager.YesButtonClick -= new UIManager.UIButtonHandler(this.FinishMoveYes_Click);
+		UIManager.NoButtonClick -= new UIManager.UIButtonHandler(this.FinishMoveNo_Click);
 		currentState = States.FinishTurn;
 		if(playerScript.CurrentTile.GetComponent<BaseTileActions>() != null) {
 			StartCoroutine(playerScript.CurrentTile.GetComponent<BaseTileActions>().LandOnTile());
 		}
 	}
 	
-	public void NoButton_Click() {
+	public void FinishMoveNo_Click(UIEventArgs e) {
+		UIManager.YesButtonClick -= new UIManager.UIButtonHandler(this.FinishMoveYes_Click);
+		UIManager.NoButtonClick -= new UIManager.UIButtonHandler(this.FinishMoveNo_Click);
 		StartCoroutine("MoveToTile", moveList.Moves[moveList.Moves.Count - 1].fromTile);
 		UIDiceMoves.GetComponent<Image>().sprite = diceSprites[0];
 		UIDiceMoves.GetComponent<Image>().enabled = true;
@@ -199,6 +204,8 @@ public class Playing : BaseGameState {
 	}
 	
 	private void ConfirmFinishMove() {
+		UIManager.YesButtonClick += new UIManager.UIButtonHandler(this.FinishMoveYes_Click);
+		UIManager.NoButtonClick += new UIManager.UIButtonHandler(this.FinishMoveNo_Click);
 		UIDiceMoves.GetComponent<Image>().enabled = false;
 		YesNoMenu.transform.FindChild("Title/Text").GetComponent<Text>().text = "Stop here?";
 		YesNoMenu.SetActive(true);
@@ -207,6 +214,8 @@ public class Playing : BaseGameState {
 
 	public override IEnumerator Starting() {
 		Game script = this.GameLogic.GetComponent<Game>();
+		UIManager = this.GameLogic.GetComponent<UIManager>();
+		UIManager.RollButtonClick += new UIManager.UIButtonHandler(this.RollButton_Click);
 		BoardInfo info = script.BoardInfo;
 		BuildLevel(info);
 		board.BuildPaths();
