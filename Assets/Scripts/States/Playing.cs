@@ -22,7 +22,7 @@ public class Playing : BaseGameState {
 	private GameObject UIDiceMoves;
 	private Sprite[] diceSprites;
 	private List<List<Tile>> possiblePaths;
-	private MoveList moveList;
+	private MoveList moveList = new MoveList();
 	private GameObject ActionMenu;
 	private GameObject YesNoMenu;
 	public GameObject OwnedPropertyInfo;
@@ -40,7 +40,20 @@ public class Playing : BaseGameState {
 	#endregion
 
 	#region Unity Methods
+	/// <summary>
+	/// Called when the script instance is being loaded. Used to initialize any variables or game state before the game starts.
+	/// Note: Called before Start()
+	/// </summary>
 	public void Awake() {
+		UIManager.RollButtonClick += new UIManager.UIButtonHandler(RollButton_Click);
+		ActionMenu = GameObject.Find("ActionMenu");
+		UnownedPropertyInfo = GameObject.Find("UnownedPropertyInfo");
+		//OwnedPropertyInfo = GameObject.Find("OwnedPropertyInfo");
+		YesNoMenu = GameObject.Find("YesNoMenu");
+		dice = GameObject.Find("Dice");
+		DiceController.DiceSpun += new DiceController.DiceSpinHandler(DiceSpun);
+		UIDiceMoves = GameObject.Find("DiceMoves");
+
 		currentState = States.ChooseAction;
 		board = new Board();
 		players = new Dictionary<int, GameObject>();
@@ -48,6 +61,9 @@ public class Playing : BaseGameState {
 		diceSprites = Resources.LoadAll<Sprite>(@"Sprites/UIDice");
 	}
 
+	/// <summary>
+	/// Called every frame
+	/// </summary>
 	public void Update() {
 		if(currentState == States.Move && movesLeft > 0) {
 			UIDiceMoves.GetComponent<Image>().sprite = diceSprites[movesLeft - 1];
@@ -57,7 +73,7 @@ public class Playing : BaseGameState {
 
 	#region UI Events
 	/// <summary>
-	/// UI Event called when the Roll button is clicked from the main Action Menu
+	/// UI Event called when the Roll button is clicked from the main Action Menu.
 	/// </summary>
 	public void RollButton_Click(UIEventArgs e) {
 		ActionMenu.SetActive(false);
@@ -66,7 +82,10 @@ public class Playing : BaseGameState {
 		dice.GetComponent<Renderer>().enabled = true;
 		StartCoroutine(dice.GetComponent<DiceController>().Roll(movesLeft));
 	}
-	
+
+	/// <summary>
+	/// UI Event when player is confirming the end of their turn.
+	/// </summary>
 	public void FinishMoveYes_Click(UIEventArgs e) {
 		YesNoMenu.SetActive(false);
 		UIManager.YesButtonClick -= new UIManager.UIButtonHandler(this.FinishMoveYes_Click);
@@ -76,7 +95,11 @@ public class Playing : BaseGameState {
 			StartCoroutine(playerScript.CurrentTile.GetComponent<BaseTileActions>().LandOnTile());
 		}
 	}
-	
+
+	/// <summary>
+	/// UI Event when player is canceling the end of their turn.
+	/// </summary>
+	/// <param name="e">E.</param>
 	public void FinishMoveNo_Click(UIEventArgs e) {
 		UIManager.YesButtonClick -= new UIManager.UIButtonHandler(this.FinishMoveYes_Click);
 		UIManager.NoButtonClick -= new UIManager.UIButtonHandler(this.FinishMoveNo_Click);
@@ -116,6 +139,9 @@ public class Playing : BaseGameState {
 	#endregion
 
 	#region Player movement
+	/// <summary>
+	/// Event handler for the end of a dice spin.
+	/// </summary>
 	public void DiceSpun() {
 		dice.GetComponent<Renderer>().enabled = false;
 		UIDiceMoves.GetComponent<Image>().sprite = diceSprites[movesLeft - 1];
@@ -128,10 +154,8 @@ public class Playing : BaseGameState {
 	}
 
 	/// <summary>
-	/// Upon clicking a tile, MoveToTile will determine which path the player must take to get to the target tile and build a list of moves.
+	/// Upon clicking a tile, MoveToTile will determine which path the player must take to get to the target tile and traverse it.
 	/// </summary>
-	/// <returns>The to tile.</returns>
-	/// <param name="targetTile">Target tile.</param>
 	private IEnumerator MoveToTile(Tile targetTile) {
 		//Path from turn's starting tile to targetTile, not neccessarily full path containing targetTile
 		List<Tile> path = board.GetPathToTile(possiblePaths, targetTile);
@@ -167,6 +191,9 @@ public class Playing : BaseGameState {
 		if(movesLeft == 0) ConfirmFinishMove();
 	}
 
+	/// <summary>
+	/// If player has already moved past the target tile, reverse until the player is either at the tile or in the path to the tile.
+	/// </summary>
 	private IEnumerator ReverseToPath(List<Tile> path) {
 		for(int i = moveList.Moves.Count - 1; i >= 0; i--) {
 			if(board.TileInPath(path, playerScript.CurrentTile)) {
@@ -181,7 +208,10 @@ public class Playing : BaseGameState {
 			movesLeft++;
 		}
 	}
-	
+
+	/// <summary>
+	/// When reversing, undo any changes that were done in the tile you passed.
+	/// </summary>
 	private void ReverseMoveChanges(Move move) {
 		playerScript.Cash -= move.cash;
 		playerScript.Level -= move.level;
@@ -192,6 +222,9 @@ public class Playing : BaseGameState {
 		moveList.GoBack();
 	}
 
+	/// <summary>
+	/// After MoveToTile builds a queue of tiles to move to, move the player along this queue.
+	/// </summary>
 	private IEnumerator ProcessMoveQueue() {
 		List<Tile> queue = new List<Tile>();
 		queue.AddRange(moveList.Queue);
@@ -207,19 +240,30 @@ public class Playing : BaseGameState {
 			moveList.Next(newMove);
 		}
 	}
-	
+
+	/// <summary>
+	/// When a player moves to a tile, the logic is handled in the tile's TileAction script's PassTile method.
+	/// For example, to collect a suit, purchase stock, or level up at the bank.
+	/// </summary>
 	private IEnumerator PassTile(Tile tile, bool reversing = false) {
 		if(tile.GetComponent<BaseTileActions>() != null) {
 			yield return StartCoroutine(tile.GetComponent<BaseTileActions>().PassTile(reversing));
 		}
 	}
-	
+
+	/// <summary>
+	/// When a player moves off a tile, the logic is handled in the previous tile's TileAction script's LeaveTile method.
+	/// For example, to hide any UI elements that were shown as part of the previous tile's PassTile.
+	/// </summary>
 	private IEnumerator LeaveTile(Tile tile) {
 		if(tile.GetComponent<BaseTileActions>() != null) {
 			yield return StartCoroutine(tile.GetComponent<BaseTileActions>().LeaveTile());
 		}
 	}
-	
+
+	/// <summary>
+	/// When a moving player is out of moves, present the Yes/No menu asking if they'd like to stop at this tile.
+	/// </summary>
 	private void ConfirmFinishMove() {
 		UIManager.YesButtonClick += new UIManager.UIButtonHandler(this.FinishMoveYes_Click);
 		UIManager.NoButtonClick += new UIManager.UIButtonHandler(this.FinishMoveNo_Click);
@@ -231,29 +275,24 @@ public class Playing : BaseGameState {
 	#endregion
 
 	#region State Events
+	/// <summary>
+	/// Set all members and UI elements to their starting states to begin the game.
+	/// Note that GameObject references should be set up in the Awake method, not here.
+	/// Assume that this method is being called as a game restart, so all references will already be set up.
+	/// </summary>
 	public override IEnumerator Starting() {
-		Game script = this.GameLogic.GetComponent<Game>();
-		UIManager.RollButtonClick += new UIManager.UIButtonHandler(this.RollButton_Click);
-		BoardInfo info = script.BoardInfo;
-		BuildLevel(info);
+		BuildLevel(GameLogic.GetComponent<Game>().BoardInfo);
 		board.BuildPaths();
 		AddPlayers(Config.Instance.playerInfo);
 		SwitchPlayers(1);
 		Camera.main.GetComponent<MoveCamera>().Character = playerObj;
-		ActionMenu = GameObject.Find("ActionMenu");
 		ActionMenu.SetActive(true);
-		//OwnedPropertyInfo = GameObject.Find("OwnedPropertyInfo");
 		//OwnedPropertyInfo.SetActive(false);
-		UnownedPropertyInfo = GameObject.Find("UnownedPropertyInfo");
 		UnownedPropertyInfo.SetActive(false);
-		YesNoMenu = GameObject.Find("YesNoMenu");
 		YesNoMenu.SetActive(false);
-		dice = GameObject.Find("Dice");
 		dice.GetComponent<Renderer>().enabled = false;
-		DiceController.DiceSpun += new DiceController.DiceSpinHandler(this.DiceSpun);
-		UIDiceMoves = GameObject.Find("DiceMoves");
 		UIDiceMoves.GetComponent<Image>().enabled = false;
-		moveList = new MoveList();
+		moveList.ClearQueue();
 		yield return null;
 	}
 
@@ -261,6 +300,9 @@ public class Playing : BaseGameState {
 	#endregion
 
 	#region Init
+	/// <summary>
+	/// Using the BoardInfo read from JSON when the game was started, construct the physical tiles representing the game board.
+	/// </summary>
 	private void BuildLevel(BoardInfo info) {
 		for(int i = 0; i < info.Tiles.Count; i++) {
 			GameObject newTile;
@@ -280,6 +322,9 @@ public class Playing : BaseGameState {
 		}
 	}
 
+	/// <summary>
+	/// Create players based on the information from the Config
+	/// </summary>
 	private void AddPlayers(Dictionary<int,PlayerInfo> playerInfo) {
 		BoardInfo info = this.GameLogic.GetComponent<Game>().BoardInfo;
 		foreach(KeyValuePair<int, PlayerInfo> entry in playerInfo) {
