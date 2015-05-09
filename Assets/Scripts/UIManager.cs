@@ -28,6 +28,10 @@ public class UIManager : Singleton<UIManager> {
 	public GameObject PlayerScores {
 		get { return playerScores; }
 	}
+	private GameObject message;
+	public GameObject Message {
+		get { return message; }
+	}
 
 	public void Awake() {
 		actionMenu = GameObject.Find("/UIOverlay/ActionMenu");
@@ -36,6 +40,7 @@ public class UIManager : Singleton<UIManager> {
 		yesNoMenu = GameObject.Find("/UIOverlay/YesNoMenu");
 		unownedPropertyInfo = GameObject.Find("/UIOverlay/UnownedPropertyInfo");
 		playerScores = GameObject.Find("/UIOverlay/PlayerScores");
+		message = GameObject.Find("/UIOverlay/message");
 	}
 
 	public delegate void UIButtonHandler(UIEventArgs e);
