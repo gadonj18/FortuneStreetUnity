@@ -28,10 +28,7 @@ public class InputEventArgs : System.EventArgs {
 	private int mouseCode;
 	private string keyCode;
 	private Vector3 mousePosition = Input.mousePosition;
-
-	public float Time {
-		get { return UnityEngine.Time.unscaledTime; }
-	}
+	private float time;
 
 	public int MouseCode {
 		get { return mouseCode; }
@@ -44,12 +41,18 @@ public class InputEventArgs : System.EventArgs {
 	public Vector3 MousePosition {
 		get { return mousePosition; }
 	}
+
+	public float Time {
+		get { return time; }
+	}
 	
 	public InputEventArgs(int mouseCode) {
 		this.mouseCode = mouseCode;
+		time = UnityEngine.Time.unscaledTime;
 	}
 
 	public InputEventArgs(string keyCode) {
 		this.keyCode = keyCode;
+		time = UnityEngine.Time.unscaledTime;
 	}
 }
