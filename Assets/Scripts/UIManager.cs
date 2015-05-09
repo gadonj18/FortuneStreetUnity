@@ -2,6 +2,17 @@
 using System.Collections;
 
 public class UIManager : MonoBehaviour {
+	private static UIManager instance;
+	private UIManager() {}
+	public static UIManager Instance {
+		get {
+			if (instance == null) {
+				instance = new UIManager();
+			}
+			return instance;
+		}
+	}
+
 	public delegate void UIButtonHandler(UIEventArgs e);
 	public static event UIButtonHandler RollButtonClick;
 	public static event UIButtonHandler YesButtonClick;
