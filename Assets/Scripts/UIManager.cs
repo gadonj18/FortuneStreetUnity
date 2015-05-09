@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class UIManager : Singleton<InputManager> {
+public class UIManager : Singleton<UIManager> {
 	protected UIManager () {}
 
 	private GameObject actionMenu;
