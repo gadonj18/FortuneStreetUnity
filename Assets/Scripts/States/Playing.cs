@@ -276,6 +276,7 @@ public class Playing : BaseGameState {
 		UIManager.Instance.YesNoMenu.SetActive(false);
 		UIManager.Instance.Dice.GetComponent<Renderer>().enabled = false;
 		UIManager.Instance.DiceMoves.GetComponent<Image>().enabled = false;
+		UIManager.Instance.Message.SetActive(false);
 		moveList.ClearQueue();
 		yield return null;
 	}
