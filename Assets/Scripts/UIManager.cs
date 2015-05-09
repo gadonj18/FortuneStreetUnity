@@ -1,24 +1,47 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class UIManager : MonoBehaviour {
-	private static UIManager instance;
-	private UIManager() {}
-	public static UIManager Instance {
-		get {
-			if (instance == null) {
-				instance = new UIManager();
-			}
-			return instance;
-		}
+public class UIManager : Singleton<InputManager> {
+	protected UIManager () {}
+
+	private GameObject actionMenu;
+	public GameObject ActionMenu {
+		get { return actionMenu; }
+	}
+	private GameObject diceMoves;
+	public GameObject DiceMoves {
+		get { return diceMoves; }
+	}
+	private GameObject dice;
+	public GameObject Dice {
+		get { return dice; }
+	}
+	private GameObject yesNoMenu;
+	public GameObject YesNoMenu {
+		get { return yesNoMenu; }
+	}
+	private GameObject unownedPropertyInfo;
+	public GameObject UnownedPropertyInfo {
+		get { return unownedPropertyInfo; }
+	}
+	private GameObject playerScores;
+	public GameObject PlayerScores {
+		get { return playerScores; }
+	}
+
+	public void Awake() {
+		actionMenu = GameObject.Find("/UIOverlay/ActionMenu");
+		diceMoves = GameObject.Find("/UIOverlay/DiceMoves");
+		dice = GameObject.Find("/UICamera/Dice");
+		yesNoMenu = GameObject.Find("/UIOverlay/YesNoMenu");
+		unownedPropertyInfo = GameObject.Find("/UIOverlay/UnownedPropertyInfo");
+		playerScores = GameObject.Find("/UIOverlay/PlayerScores");
 	}
 
 	public delegate void UIButtonHandler(UIEventArgs e);
 	public static event UIButtonHandler RollButtonClick;
 	public static event UIButtonHandler YesButtonClick;
 	public static event UIButtonHandler NoButtonClick;
-
-	public StateManager stateManager;
 
 	public void RollButton_Click() {
 		if(RollButtonClick != null) RollButtonClick(new UIEventArgs());
