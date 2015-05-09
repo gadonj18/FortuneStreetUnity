@@ -10,23 +10,17 @@ public class Playing : BaseGameState {
 	#region Members and Properties
 	private enum States { ChooseAction, Roll, Move, Confirm, FinishTurn };
 	private States currentState;
-	private Board board;
-	private Dictionary<int, GameObject> players;
+	private Board board = new Board();
+	private Dictionary<int, GameObject> players = new Dictionary<int, GameObject>();
 	private GameObject playerObj;
 	private PlayerController playerScript;
 	public PlayerController PlayerScript {
 		get { return playerScript; }
 	}
 	private int movesLeft = 0;
-	private GameObject dice;
-	private GameObject UIDiceMoves;
 	private Sprite[] diceSprites;
 	private List<List<Tile>> possiblePaths;
 	private MoveList moveList = new MoveList();
-	private GameObject ActionMenu;
-	private GameObject YesNoMenu;
-	public GameObject OwnedPropertyInfo;
-	public GameObject UnownedPropertyInfo;
 	public Dictionary<string, int> StockPrices = new Dictionary<string, int>();
 	/// <summary>
 	/// List of input events we wish to register with the input manager
@@ -46,18 +40,8 @@ public class Playing : BaseGameState {
 	/// </summary>
 	public void Awake() {
 		UIManager.RollButtonClick += new UIManager.UIButtonHandler(RollButton_Click);
-		ActionMenu = GameObject.Find("ActionMenu");
-		UnownedPropertyInfo = GameObject.Find("UnownedPropertyInfo");
-		//OwnedPropertyInfo = GameObject.Find("OwnedPropertyInfo");
-		YesNoMenu = GameObject.Find("YesNoMenu");
-		dice = GameObject.Find("Dice");
 		DiceController.DiceSpun += new DiceController.DiceSpinHandler(DiceSpun);
-		UIDiceMoves = GameObject.Find("DiceMoves");
-
 		currentState = States.ChooseAction;
-		board = new Board();
-		players = new Dictionary<int, GameObject>();
-		playerObj = null;
 		diceSprites = Resources.LoadAll<Sprite>(@"Sprites/UIDice");
 	}
 
@@ -66,7 +50,7 @@ public class Playing : BaseGameState {
 	/// </summary>
 	public void Update() {
 		if(currentState == States.Move && movesLeft > 0) {
-			UIDiceMoves.GetComponent<Image>().sprite = diceSprites[movesLeft - 1];
+			UIManager.Instance.DiceMoves.GetComponent<Image>().sprite = diceSprites[movesLeft - 1];
 		}
 	}
 	#endregion
@@ -76,18 +60,18 @@ public class Playing : BaseGameState {
 	/// UI Event called when the Roll button is clicked from the main Action Menu.
 	/// </summary>
 	public void RollButton_Click(UIEventArgs e) {
-		ActionMenu.SetActive(false);
+		UIManager.Instance.ActionMenu.SetActive(false);
 		movesLeft = Random.Range(1, 6);
 		movesLeft = 1;
-		dice.GetComponent<Renderer>().enabled = true;
-		StartCoroutine(dice.GetComponent<DiceController>().Roll(movesLeft));
+		UIManager.Instance.Dice.GetComponent<Renderer>().enabled = true;
+		StartCoroutine(UIManager.Instance.Dice.GetComponent<DiceController>().Roll(movesLeft));
 	}
 
 	/// <summary>
 	/// UI Event when player is confirming the end of their turn.
 	/// </summary>
 	public void FinishMoveYes_Click(UIEventArgs e) {
-		YesNoMenu.SetActive(false);
+		UIManager.Instance.YesNoMenu.SetActive(false);
 		UIManager.YesButtonClick -= new UIManager.UIButtonHandler(this.FinishMoveYes_Click);
 		UIManager.NoButtonClick -= new UIManager.UIButtonHandler(this.FinishMoveNo_Click);
 		currentState = States.FinishTurn;
@@ -104,9 +88,9 @@ public class Playing : BaseGameState {
 		UIManager.YesButtonClick -= new UIManager.UIButtonHandler(this.FinishMoveYes_Click);
 		UIManager.NoButtonClick -= new UIManager.UIButtonHandler(this.FinishMoveNo_Click);
 		StartCoroutine("MoveToTile", moveList.Moves[moveList.Moves.Count - 1].fromTile);
-		UIDiceMoves.GetComponent<Image>().sprite = diceSprites[0];
-		UIDiceMoves.GetComponent<Image>().enabled = true;
-		YesNoMenu.SetActive(false);
+		UIManager.Instance.DiceMoves.GetComponent<Image>().sprite = diceSprites[0];
+		UIManager.Instance.DiceMoves.GetComponent<Image>().enabled = true;
+		UIManager.Instance.YesNoMenu.SetActive(false);
 		currentState = States.Move;
 	}
 	#endregion
@@ -143,9 +127,9 @@ public class Playing : BaseGameState {
 	/// Event handler for the end of a dice spin.
 	/// </summary>
 	public void DiceSpun() {
-		dice.GetComponent<Renderer>().enabled = false;
-		UIDiceMoves.GetComponent<Image>().sprite = diceSprites[movesLeft - 1];
-		UIDiceMoves.GetComponent<Image>().enabled = true;
+		UIManager.Instance.Dice.GetComponent<Renderer>().enabled = false;
+		UIManager.Instance.DiceMoves.GetComponent<Image>().sprite = diceSprites[movesLeft - 1];
+		UIManager.Instance.DiceMoves.GetComponent<Image>().enabled = true;
 		possiblePaths = board.GetPaths(playerScript.CurrentTile, playerScript.Direction, movesLeft);
 		foreach(List<Tile> path in possiblePaths) {
 			path.Insert(0, playerScript.CurrentTile);
@@ -267,9 +251,9 @@ public class Playing : BaseGameState {
 	private void ConfirmFinishMove() {
 		UIManager.YesButtonClick += new UIManager.UIButtonHandler(this.FinishMoveYes_Click);
 		UIManager.NoButtonClick += new UIManager.UIButtonHandler(this.FinishMoveNo_Click);
-		UIDiceMoves.GetComponent<Image>().enabled = false;
-		YesNoMenu.transform.FindChild("Title/Text").GetComponent<Text>().text = "Stop here?";
-		YesNoMenu.SetActive(true);
+		UIManager.Instance.DiceMoves.GetComponent<Image>().enabled = false;
+		UIManager.Instance.YesNoMenu.transform.FindChild("Title/Text").GetComponent<Text>().text = "Stop here?";
+		UIManager.Instance.YesNoMenu.SetActive(true);
 		currentState = States.Confirm;
 	}
 	#endregion
@@ -286,12 +270,12 @@ public class Playing : BaseGameState {
 		AddPlayers(Config.Instance.playerInfo);
 		SwitchPlayers(1);
 		Camera.main.GetComponent<MoveCamera>().Character = playerObj;
-		ActionMenu.SetActive(true);
-		//OwnedPropertyInfo.SetActive(false);
-		UnownedPropertyInfo.SetActive(false);
-		YesNoMenu.SetActive(false);
-		dice.GetComponent<Renderer>().enabled = false;
-		UIDiceMoves.GetComponent<Image>().enabled = false;
+		UIManager.Instance.ActionMenu.SetActive(true);
+		//UIManager.Instance.OwnedPropertyInfo.SetActive(false);
+		UIManager.Instance.UnownedPropertyInfo.SetActive(false);
+		UIManager.Instance.YesNoMenu.SetActive(false);
+		UIManager.Instance.Dice.GetComponent<Renderer>().enabled = false;
+		UIManager.Instance.DiceMoves.GetComponent<Image>().enabled = false;
 		moveList.ClearQueue();
 		yield return null;
 	}

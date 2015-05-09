@@ -10,17 +10,20 @@ public class PropertyActions : BaseTileActions {
 	}
 
 	public override IEnumerator PassTile(bool reversing = false) {
-		GameState.UnownedPropertyInfo.transform.Find("District").Find("Text").GetComponent<Text>().text = "District " + TileScript.District;
-		GameState.UnownedPropertyInfo.transform.Find("ShopValueBG").Find("ShopValue").GetComponent<Text>().text = "$" + TileScript.ShopValue;
-		GameState.UnownedPropertyInfo.transform.Find("ShopPriceBG").Find("ShopPrice").GetComponent<Text>().text = "$" + TileScript.ShopPrice;
-		GameState.UnownedPropertyInfo.transform.Find("Name").GetComponent<Text>().text = TileScript.PropertyName;
-		GameState.UnownedPropertyInfo.SetActive(true);
+		UIManager.Instance.UnownedPropertyInfo.transform.Find("District").Find("Text").GetComponent<Text>().text = "District " + TileScript.District;
+		UIManager.Instance.UnownedPropertyInfo.transform.Find("ShopValueBG").Find("ShopValue").GetComponent<Text>().text = "$" + TileScript.ShopValue;
+		UIManager.Instance.UnownedPropertyInfo.transform.Find("ShopPriceBG").Find("ShopPrice").GetComponent<Text>().text = "$" + TileScript.ShopPrice;
+		UIManager.Instance.UnownedPropertyInfo.transform.Find("Name").GetComponent<Text>().text = TileScript.PropertyName;
+		UIManager.Instance.UnownedPropertyInfo.SetActive(true);
 		yield return null;
 	}
 	
 	public override IEnumerator LandOnTile() {
+		UIManager.YesButtonClick += new UIManager.UIButtonHandler(PurchaseYes_Click);
+		UIManager.NoButtonClick += new UIManager.UIButtonHandler(PurchaseNo_Click);
 		if(TileScript.Owner == null) {
-
+			UIManager.Instance.YesNoMenu.transform.FindChild("Title/Text").GetComponent<Text>().text = "Purchase Property?";
+			UIManager.Instance.YesNoMenu.SetActive(true);
 		} else {
 
 		}
@@ -28,7 +31,19 @@ public class PropertyActions : BaseTileActions {
 	}
 	
 	public override IEnumerator LeaveTile() {
-		GameState.UnownedPropertyInfo.SetActive(false);
+		UIManager.Instance.UnownedPropertyInfo.SetActive(false);
 		yield return null;
+	}
+	
+	public void PurchaseYes_Click(UIEventArgs e) {
+		UIManager.Instance.YesNoMenu.SetActive(false);
+		UIManager.YesButtonClick -= new UIManager.UIButtonHandler(PurchaseYes_Click);
+		UIManager.NoButtonClick -= new UIManager.UIButtonHandler(PurchaseNo_Click);
+	}
+	
+	public void PurchaseNo_Click(UIEventArgs e) {
+		UIManager.Instance.YesNoMenu.SetActive(false);
+		UIManager.YesButtonClick -= new UIManager.UIButtonHandler(PurchaseYes_Click);
+		UIManager.NoButtonClick -= new UIManager.UIButtonHandler(PurchaseNo_Click);
 	}
 }
