@@ -8,6 +8,9 @@ public abstract class BaseTileActions : MonoBehaviour, ITileActions {
 	public abstract IEnumerator LandOnTile();
 	public abstract IEnumerator LeaveTile();
 	public virtual void MoveChanges(Move move) { return; }
+	public virtual void FinishTurn() {
+		GameState.FinishTurn();
+	}
 	private void Awake() {
 		Tile = transform.gameObject;
 	}

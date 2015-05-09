@@ -327,6 +327,10 @@ public class Playing : BaseGameState {
 	#endregion
 
 	#region Turn management
+	public void FinishTurn() {
+
+	}
+
 	private void SwitchPlayers(int playerNum) {
 		if(playerObj != null) {
 			playerObj.GetComponent<PlayerController>().Hide();

@@ -6,4 +6,5 @@ public interface ITileActions {
 	IEnumerator LandOnTile();
 	IEnumerator LeaveTile();
 	void MoveChanges(Move move);
+	void FinishTurn();
 }
