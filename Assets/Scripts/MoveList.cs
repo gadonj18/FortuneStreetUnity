@@ -56,14 +56,14 @@ public class Move {
 	public Tile toTile;
 	public int cash = 0;
 	public KeyValuePair<string, int>? stock = null;
-	public Dictionary<Constants.Cards, bool> cards = new Dictionary<Constants.Cards, bool>();
+	public Dictionary<Constants.Suits, bool> cards = new Dictionary<Constants.Suits, bool>();
 	public int level = 0;
 	
-	public void CardGained(Constants.Cards card) {
+	public void CardGained(Constants.Suits card) {
 		cards[card] = true;
 	}
 	
-	public void CardLost(Constants.Cards card) {
+	public void CardLost(Constants.Suits card) {
 		cards[card] = true;
 	}
 }

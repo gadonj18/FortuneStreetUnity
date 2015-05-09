@@ -13,6 +13,9 @@ public class Playing : BaseGameState {
 	private Dictionary<int, GameObject> players;
 	private GameObject playerObj;
 	private PlayerController playerScript;
+	public PlayerController PlayerScript {
+		get { return playerScript; }
+	}
 	private int movesLeft = 0;
 	private GameObject dice;
 	private GameObject UIDiceMoves;
@@ -21,6 +24,9 @@ public class Playing : BaseGameState {
 	private MoveList moveList;
 	private GameObject ActionMenu;
 	private GameObject YesNoMenu;
+	public GameObject OwnedPropertyInfo;
+	public GameObject UnownedPropertyInfo;
+	public Dictionary<string, int> StockPrices = new Dictionary<string, int>();
 	/// <summary>
 	/// List of input events we wish to register with the input manager
 	/// </summary>
@@ -51,21 +57,25 @@ public class Playing : BaseGameState {
 	public void RollButton_Click() {
 		ActionMenu.SetActive(false);
 		movesLeft = Random.Range(1, 6);
-		movesLeft = 6;
+		movesLeft = 1;
 		dice.GetComponent<Renderer>().enabled = true;
 		StartCoroutine(dice.GetComponent<DiceController>().Roll(movesLeft));
 	}
 	
 	public void YesButton_Click() {
+		YesNoMenu.SetActive(false);
 		currentState = States.FinishTurn;
+		if(playerScript.CurrentTile.GetComponent<BaseTileActions>() != null) {
+			StartCoroutine(playerScript.CurrentTile.GetComponent<BaseTileActions>().LandOnTile());
+		}
 	}
 	
 	public void NoButton_Click() {
-		currentState = States.Move;
 		StartCoroutine("MoveToTile", moveList.Moves[moveList.Moves.Count - 1].fromTile);
 		UIDiceMoves.GetComponent<Image>().sprite = diceSprites[0];
 		UIDiceMoves.GetComponent<Image>().enabled = true;
 		YesNoMenu.SetActive(false);
+		currentState = States.Move;
 	}
 
 	public void DiceSpun() {
@@ -132,7 +142,7 @@ public class Playing : BaseGameState {
 			//And move to the queue
 			yield return StartCoroutine("ProcessMoveQueue");
 		}
-		if(movesLeft == 0) FinishMove();
+		if(movesLeft == 0) ConfirmFinishMove();
 	}
 
 	private IEnumerator ReverseToPath(List<Tile> path) {
@@ -142,6 +152,8 @@ public class Playing : BaseGameState {
 			}
 
 			Move lastMove = moveList.Moves[i];
+			yield return StartCoroutine(LeaveTile(playerScript.CurrentTile));
+			yield return StartCoroutine(PassTile(lastMove.fromTile, true));
 			yield return StartCoroutine(playerScript.MoveToTile(lastMove.fromTile));
 			ReverseMoveChanges(lastMove);
 			movesLeft++;
@@ -151,8 +163,8 @@ public class Playing : BaseGameState {
 	private void ReverseMoveChanges(Move move) {
 		playerScript.Cash -= move.cash;
 		playerScript.Level -= move.level;
-		foreach(KeyValuePair<Constants.Cards, bool> cardChange in move.cards) {
-			playerScript.Cards[cardChange.Key] = !cardChange.Value;
+		foreach(KeyValuePair<Constants.Suits, bool> cardChange in move.cards) {
+			playerScript.Suits[cardChange.Key] = !cardChange.Value;
 		}
 		if(move.stock != null) playerScript.Stocks[((KeyValuePair<string, int>)move.stock).Key] -= ((KeyValuePair<string, int>)move.stock).Value;
 		moveList.GoBack();
@@ -165,20 +177,30 @@ public class Playing : BaseGameState {
 			Move newMove = new Move();
 			newMove.fromTile = playerScript.CurrentTile;
 			newMove.toTile = nextTile;
+			yield return StartCoroutine(LeaveTile(newMove.fromTile));
+			yield return StartCoroutine(PassTile(newMove.toTile));
+			if(newMove.toTile.GetComponent<BaseTileActions>() != null) newMove.toTile.GetComponent<BaseTileActions>().MoveChanges(newMove);
 			yield return StartCoroutine(playerScript.MoveToTile(nextTile));
 			movesLeft--;
-			PassTile(newMove);
 			moveList.Next(newMove);
 		}
 	}
 	
-	private void PassTile(Move move) {
-		
+	private IEnumerator PassTile(Tile tile, bool reversing = false) {
+		if(tile.GetComponent<BaseTileActions>() != null) {
+			yield return StartCoroutine(tile.GetComponent<BaseTileActions>().PassTile(reversing));
+		}
 	}
 	
-	private void FinishMove() {
+	private IEnumerator LeaveTile(Tile tile) {
+		if(tile.GetComponent<BaseTileActions>() != null) {
+			yield return StartCoroutine(tile.GetComponent<BaseTileActions>().LeaveTile());
+		}
+	}
+	
+	private void ConfirmFinishMove() {
 		UIDiceMoves.GetComponent<Image>().enabled = false;
-		YesNoMenu.transform.FindChild("Title").FindChild("Text").GetComponent<Text>().text = "Stop here?";
+		YesNoMenu.transform.FindChild("Title/Text").GetComponent<Text>().text = "Stop here?";
 		YesNoMenu.SetActive(true);
 		currentState = States.Confirm;
 	}
@@ -193,6 +215,10 @@ public class Playing : BaseGameState {
 		Camera.main.GetComponent<MoveCamera>().Character = playerObj;
 		ActionMenu = GameObject.Find("ActionMenu");
 		ActionMenu.SetActive(true);
+		//OwnedPropertyInfo = GameObject.Find("OwnedPropertyInfo");
+		//OwnedPropertyInfo.SetActive(false);
+		UnownedPropertyInfo = GameObject.Find("UnownedPropertyInfo");
+		UnownedPropertyInfo.SetActive(false);
 		YesNoMenu = GameObject.Find("YesNoMenu");
 		YesNoMenu.SetActive(false);
 		dice = GameObject.Find("Dice");
@@ -213,20 +239,35 @@ public class Playing : BaseGameState {
 
 	private void BuildLevel(BoardInfo info) {
 		for(int i = 0; i < info.Tiles.Count; i++) {
-			GameObject newTile = TileFactory.Instance.Build(info.Tiles[i].Code, info.Tiles[i].TileX, info.Tiles[i].TileY, info.Tiles[i].District);
+			GameObject newTile;
+			if(info.Tiles[i].Code == Constants.TileCodes.Property) {
+				newTile = TileFactory.Instance.Build(info.Tiles[i].Code, info.Tiles[i].TileX, info.Tiles[i].TileY, info.Tiles[i].ShopValue, info.Tiles[i].District, info.Tiles[i].PropertyName);
+			} else {
+				newTile = TileFactory.Instance.Build(info.Tiles[i].Code, info.Tiles[i].TileX, info.Tiles[i].TileY);
+			}
+			if(newTile.GetComponent<BaseTileActions>() != null) {
+				newTile.GetComponent<BaseTileActions>().GameState = this;
+			}
 			board.AddTile(newTile, info.Tiles[i].TileX, info.Tiles[i].TileY);
 		}
 		board.Districts = info.Districts;
+		for(int i = 0; i < board.Districts.Count; i++) {
+			StockPrices.Add(board.Districts[i], 10);
+		}
 	}
 
 	private void AddPlayers(Dictionary<int,PlayerInfo> playerInfo) {
+		BoardInfo info = this.GameLogic.GetComponent<Game>().BoardInfo;
 		foreach(KeyValuePair<int, PlayerInfo> entry in playerInfo) {
 			GameObject player = (GameObject)GameObject.Instantiate(Resources.Load("Prefabs/Characters/LeftShark"));
 			PlayerController playerScript = (PlayerController)player.GetComponent<PlayerController>();
+			playerScript.gameLogic = this;
 			playerScript.CurrentTile = board.bank.GetComponent<Bank>();
 			playerScript.PlayerName = entry.Value.Name;
 			playerScript.Color = entry.Value.Color;
+			playerScript.Cash = info.StartCash;
 			playerScript.Hide();
+			playerScript.ScoreUI = GameObject.Find("UIOverlay/PlayerScores/Player" + entry.Key);
 			players.Add(entry.Key, player);
 		}
 	}

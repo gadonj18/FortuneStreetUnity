@@ -64,6 +64,7 @@
         {
             "tileCode": 12,
             "district": "A",
+            "name": "Donut Shop",
             "x": 4,
             "y": 8,
             "dirRestrictions": []
@@ -71,6 +72,7 @@
         {
             "tileCode": 12,
             "district": "A",
+            "name": "Pizza Parlor",
             "x": 6,
             "y": 8,
             "dirRestrictions": []
@@ -78,6 +80,7 @@
         {
             "tileCode": 12,
             "district": "A",
+            "name": "Cafe",
             "x": 10,
             "y": 8,
             "dirRestrictions": []
@@ -85,6 +88,7 @@
         {
             "tileCode": 12,
             "district": "A",
+            "name": "Burger 'n Fries",
             "x": 12,
             "y": 8,
             "dirRestrictions": []
@@ -92,6 +96,7 @@
         {
             "tileCode": 12,
             "district": "B",
+            "name": "",
             "x": 1,
             "y": 10,
             "dirRestrictions": []
@@ -99,6 +104,7 @@
         {
             "tileCode": 12,
             "district": "B",
+            "name": "",
             "x": 1,
             "y": 12,
             "dirRestrictions": []
@@ -106,6 +112,7 @@
         {
             "tileCode": 12,
             "district": "B",
+            "name": "",
             "x": 4,
             "y": 15,
             "dirRestrictions": []
@@ -113,6 +120,7 @@
         {
             "tileCode": 12,
             "district": "B",
+            "name": "",
             "x": 6,
             "y": 15,
             "dirRestrictions": []
@@ -120,6 +128,7 @@
         {
             "tileCode": 12,
             "district": "C",
+            "name": "",
             "x": 10,
             "y": 15,
             "dirRestrictions": []
@@ -127,6 +136,7 @@
         {
             "tileCode": 12,
             "district": "C",
+            "name": "",
             "x": 12,
             "y": 15,
             "dirRestrictions": []
@@ -134,6 +144,7 @@
         {
             "tileCode": 12,
             "district": "C",
+            "name": "",
             "x": 15,
             "y": 12,
             "dirRestrictions": []
@@ -141,6 +152,7 @@
         {
             "tileCode": 12,
             "district": "C",
+            "name": "",
             "x": 15,
             "y": 10,
             "dirRestrictions": []
@@ -148,6 +160,7 @@
         {
             "tileCode": 12,
             "district": "D",
+            "name": "",
             "x": 1,
             "y": 6,
             "dirRestrictions": []
@@ -155,6 +168,7 @@
         {
             "tileCode": 12,
             "district": "D",
+            "name": "",
             "x": 1,
             "y": 4,
             "dirRestrictions": []
@@ -162,6 +176,7 @@
         {
             "tileCode": 12,
             "district": "D",
+            "name": "",
             "x": 4,
             "y": 1,
             "dirRestrictions": []
@@ -169,6 +184,7 @@
         {
             "tileCode": 12,
             "district": "D",
+            "name": "",
             "x": 6,
             "y": 1,
             "dirRestrictions": []
@@ -176,6 +192,7 @@
         {
             "tileCode": 12,
             "district": "E",
+            "name": "",
             "x": 10,
             "y": 1,
             "dirRestrictions": []
@@ -183,6 +200,7 @@
         {
             "tileCode": 12,
             "district": "E",
+            "name": "",
             "x": 12,
             "y": 1,
             "dirRestrictions": []
@@ -190,6 +208,7 @@
         {
             "tileCode": 12,
             "district": "E",
+            "name": "",
             "x": 15,
             "y": 4,
             "dirRestrictions": []
@@ -197,6 +216,7 @@
         {
             "tileCode": 12,
             "district": "E",
+            "name": "",
             "x": 15,
             "y": 6,
             "dirRestrictions": []

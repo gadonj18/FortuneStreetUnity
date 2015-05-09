@@ -64,7 +64,7 @@ public class BoardInfo {
 		this.districts = new List<string>();
 		foreach (TileInfo tile in tiles) {
 			Tiles.Add(tile);
-			if(!districts.Contains(tile.District)) {
+			if(tile.District != null && !districts.Contains(tile.District)) {
 				districts.Add(tile.District);
 			}
 		}
@@ -84,6 +84,8 @@ public class TileInfo {
 	private int tileX;
 	private int tileY;
 	private string district;
+	private int shopValue;
+	private string propertyName;
 	private List<DirRestriction> restrictions;
 	
 	public Constants.TileCodes Code {
@@ -106,19 +108,31 @@ public class TileInfo {
 		set { district = value; }
 	}
 	
+	public int ShopValue {
+		get { return shopValue; }
+		set { shopValue = value; }
+	}
+	
+	public string PropertyName {
+		get { return propertyName; }
+		set { propertyName = value; }
+	}
+	
 	public List<DirRestriction> Restrictions {
 		get { return restrictions; }
 	}
 	
 	public TileInfo() {}
 	
-	public TileInfo(Constants.TileCodes tileCode, int x, int y, List<DirRestriction> restrictions, string district = null) {
+	public TileInfo(Constants.TileCodes tileCode, int x, int y, List<DirRestriction> restrictions, string district = null, string name = null) {
 		Code = tileCode;
 		TileX = x;
 		TileY = y;
 		if(tileCode == Constants.TileCodes.Property) {
 			District = district;
 		}
+		ShopValue = Random.Range(100, 500);
+		PropertyName = name;
 		this.restrictions = new List<DirRestriction> ();
 		foreach (DirRestriction restriction in restrictions) {
 			Restrictions.Add(restriction);
@@ -133,7 +147,7 @@ public class TileInfo {
 				restrictions.Add (newRestriction);
 			}
 		}
-		return new TileInfo((Constants.TileCodes)json["tileCode"].AsInt, json["x"].AsInt, json["y"].AsInt, restrictions, json["district"].Value);
+		return new TileInfo((Constants.TileCodes)json["tileCode"].AsInt, json["x"].AsInt, json["y"].AsInt, restrictions, json["district"].Value, json["name"].Value);
 	}
 }
 

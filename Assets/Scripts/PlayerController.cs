@@ -1,8 +1,10 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour {
+	public Playing gameLogic;
 	private string playerName;
 	private Color color;
 	private Tile currentTile;
@@ -10,13 +12,14 @@ public class PlayerController : MonoBehaviour {
 	private int cash;
 	private Dictionary<string, List<Property>> properties;
 	private Dictionary<string, int> stocks;
-	private Dictionary<Constants.Cards, bool> cards;
+	private Dictionary<Constants.Suits, bool> suits;
 	private int level;
 	private int hopLeftHash = Animator.StringToHash("Base Layer.HopLeft");
 	private int hopRightHash = Animator.StringToHash("Base Layer.HopRight");
 	private bool leftHopNext = true;
 	public bool moving = false;
 	public float MoveSpeed = 2.6f;
+	public GameObject ScoreUI;
 
 	public delegate void PlayerMoveHandler(PlayerMoveEventArgs e);
 	public static event PlayerMoveHandler PlayerMove;
@@ -54,8 +57,8 @@ public class PlayerController : MonoBehaviour {
 		get { return stocks; }
 	}
 
-	public Dictionary<Constants.Cards, bool> Cards {
-		get { return cards; }
+	public Dictionary<Constants.Suits, bool> Suits {
+		get { return suits; }
 	}
 
 	public int Level {
@@ -63,15 +66,63 @@ public class PlayerController : MonoBehaviour {
 		set { level = value; }
 	}
 
+	public int Worth {
+		get {
+			int worth = 0;
+			worth += cash;
+			worth += PropertyWorth;
+			worth += StockWorth;
+			return worth;
+		}
+	}
+
+	public int PropertyWorth {
+		get {
+			int worth = 0;
+			foreach(KeyValuePair<string, List<Property>> district in Properties) {
+				foreach(Property property in district.Value) {
+					worth += property.TotalValue;
+				}
+			}
+			return worth;
+		}
+	}
+
+	public int StockWorth {
+		get {
+			int worth = 0;
+			foreach(KeyValuePair<string, int> district in Stocks) {
+				worth += district.Value * gameLogic.StockPrices[district.Key];
+			}
+			return worth;
+		}
+	}
+
 	public void Awake() {
 		properties = new Dictionary<string, List<Property>>();
 		stocks = new Dictionary<string, int>();
-		cards = new Dictionary<Constants.Cards, bool> ();
-		Constants.Cards[] cardList = (Constants.Cards[])System.Enum.GetValues(typeof(Constants.Cards));
-		foreach(Constants.Cards card in cardList) {
-			cards[card] = false;
+		suits = new Dictionary<Constants.Suits, bool> ();
+		Constants.Suits[] cardList = (Constants.Suits[])System.Enum.GetValues(typeof(Constants.Suits));
+		foreach(Constants.Suits card in cardList) {
+			suits[card] = false;
 		}
 		transform.rotation = Quaternion.Euler(-15f, 180f, 0f);
+	}
+
+	public void Update() {
+		ScoreUI.transform.Find("Name").GetComponent<Text>().text = PlayerName;
+		ScoreUI.transform.Find("Cash").GetComponent<Text>().text = "$" + Cash.ToString();
+		ScoreUI.transform.Find("Worth").GetComponent<Text>().text = "$" + Cash.ToString();
+		string cardString = "";
+		if(suits[Constants.Suits.Club]) cardString += "C";
+		if(suits[Constants.Suits.Heart]) cardString += "H";
+		if(suits[Constants.Suits.Spade]) cardString += "S";
+		if(suits[Constants.Suits.Diamond]) cardString += "D";
+		ScoreUI.transform.Find("Cards").GetComponent<Text>().text = cardString;
+	}
+
+	public int NumPropertiesInDistrict(string district) {
+		return Properties[district].Count;
 	}
 	
 	public void Hide() {
