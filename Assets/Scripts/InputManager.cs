@@ -1,17 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class InputManager : MonoBehaviour {
-	private static InputManager instance;
-	private InputManager() {}
-	public static InputManager Instance {
-		get {
-			if (instance == null) {
-				instance = new InputManager();
-			}
-			return instance;
-		}
-	}
+public class InputManager : Singleton<InputManager> {
+	protected InputManager () {}
 
 	public delegate void MouseHandler(InputEventArgs e);
 	public delegate void KeyHandler(InputEventArgs e);
