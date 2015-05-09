@@ -7,9 +7,9 @@ using System.Collections.Generic;
 /// The main game state that controls all aspects of players' turns
 /// </summary>
 public class Playing : BaseGameState {
+	#region Members and Properties
 	private enum States { ChooseAction, Roll, Move, Confirm, FinishTurn };
 	private States currentState;
-	public UIManager UIManager;
 	private Board board;
 	private Dictionary<int, GameObject> players;
 	private GameObject playerObj;
@@ -37,7 +37,9 @@ public class Playing : BaseGameState {
 	private ICollection<Constants.InputEvents> inputEvents = new List<Constants.InputEvents>() {
 		Constants.InputEvents.MouseUp
 	};
+	#endregion
 
+	#region Unity Methods
 	public void Awake() {
 		currentState = States.ChooseAction;
 		board = new Board();
@@ -51,7 +53,9 @@ public class Playing : BaseGameState {
 			UIDiceMoves.GetComponent<Image>().sprite = diceSprites[movesLeft - 1];
 		}
 	}
+	#endregion
 
+	#region UI Events
 	/// <summary>
 	/// UI Event called when the Roll button is clicked from the main Action Menu
 	/// </summary>
@@ -82,7 +86,36 @@ public class Playing : BaseGameState {
 		YesNoMenu.SetActive(false);
 		currentState = States.Move;
 	}
+	#endregion
 
+	#region Input Events
+	/// <summary>
+	/// Called by the Input Manager when the user clicks the mouse. Hands off click to method with the name "[STATE]_[MOUSECODE]Click()", e.g. "Move_LeftClick()"
+	/// </summary>
+	public override void MouseUp(InputEventArgs e) {
+		string[] mouseButton = new string[] { "Left", "Middle", "Right" };
+		System.Reflection.MethodInfo method = typeof(Playing).GetMethod(currentState.ToString() + "_" + mouseButton[e.MouseCode] + "Click");
+		if(method != null) method.Invoke(this, new object[] { e });
+	}
+
+	public override void MouseClick(InputEventArgs e) { throw new System.NotImplementedException (); }
+	public override void MouseHeld(InputEventArgs e) { throw new System.NotImplementedException (); }
+	public override void KeyClick(InputEventArgs e) { throw new System.NotImplementedException (); }
+	public override void KeyHeld(InputEventArgs e) { throw new System.NotImplementedException (); }
+	public override void KeyUp(InputEventArgs e) { throw new System.NotImplementedException (); }
+
+	/// <summary>
+	/// Called when the user left clicks during the Move substate. Used to select a tile to move to.
+	/// </summary>
+	public void Move_LeftClick(InputEventArgs e) {
+		Tile targetTile = board.GetTileAt(e.MousePosition);
+		if(targetTile != null && targetTile != playerScript.CurrentTile) {
+			StartCoroutine("MoveToTile", targetTile);
+		}
+	}
+	#endregion
+
+	#region Player movement
 	public void DiceSpun() {
 		dice.GetComponent<Renderer>().enabled = false;
 		UIDiceMoves.GetComponent<Image>().sprite = diceSprites[movesLeft - 1];
@@ -92,22 +125,6 @@ public class Playing : BaseGameState {
 			path.Insert(0, playerScript.CurrentTile);
 		}
 		currentState = States.Move;
-	}
-
-	/// <summary>
-	/// Called by the Input Manager when the user clicks the mouse. Hands off click to method with the name "[STATE]_[MOUSECODE]Click()", e.g. "Move_LeftClick()"
-	/// </summary>
-	public override void MouseUp(InputEventArgs e) {
-		string[] mouseButton = new string[] { "Left", "Middle", "Right" };
-		System.Reflection.MethodInfo method = typeof(Playing).GetMethod(currentState.ToString() + "_" + mouseButton[e.MouseCode] + "Click");
-		if(method != null) method.Invoke(this, new object[] { e });
-	}
-	
-	public void Move_LeftClick(InputEventArgs e) {
-		Tile targetTile = board.GetTileAt(e.MousePosition);
-		if(targetTile != null && targetTile != playerScript.CurrentTile) {
-			StartCoroutine("MoveToTile", targetTile);
-		}
 	}
 
 	/// <summary>
@@ -211,10 +228,11 @@ public class Playing : BaseGameState {
 		YesNoMenu.SetActive(true);
 		currentState = States.Confirm;
 	}
+	#endregion
 
+	#region State Events
 	public override IEnumerator Starting() {
 		Game script = this.GameLogic.GetComponent<Game>();
-		UIManager = this.GameLogic.GetComponent<UIManager>();
 		UIManager.RollButtonClick += new UIManager.UIButtonHandler(this.RollButton_Click);
 		BoardInfo info = script.BoardInfo;
 		BuildLevel(info);
@@ -240,12 +258,9 @@ public class Playing : BaseGameState {
 	}
 
 	public override IEnumerator Ending() { yield return null; }
-	public override void MouseClick(InputEventArgs e) { throw new System.NotImplementedException (); }
-	public override void MouseHeld(InputEventArgs e) { throw new System.NotImplementedException (); }
-	public override void KeyClick(InputEventArgs e) { throw new System.NotImplementedException (); }
-	public override void KeyHeld(InputEventArgs e) { throw new System.NotImplementedException (); }
-	public override void KeyUp(InputEventArgs e) { throw new System.NotImplementedException (); }
+	#endregion
 
+	#region Init
 	private void BuildLevel(BoardInfo info) {
 		for(int i = 0; i < info.Tiles.Count; i++) {
 			GameObject newTile;
@@ -280,7 +295,9 @@ public class Playing : BaseGameState {
 			players.Add(entry.Key, player);
 		}
 	}
+	#endregion
 
+	#region Turn management
 	private void SwitchPlayers(int playerNum) {
 		if(playerObj != null) {
 			playerObj.GetComponent<PlayerController>().Hide();
@@ -290,4 +307,5 @@ public class Playing : BaseGameState {
 		playerScript.Show();
 		Camera.main.GetComponent<MoveCamera>().Character = playerObj;
 	}
+	#endregion
 }
