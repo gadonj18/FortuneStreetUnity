@@ -41,8 +41,8 @@ public class PropertyActions : BaseTileActions {
 		} else if(TileScript.Owner == GameState.PlayerScript) {
 
 		} else {
-			GameState.PlayerScript -= TileScript.ShopPrice;
-			TileScript.Owner += TileScript.ShopPrice;
+			GameState.PlayerScript.Cash -= TileScript.ShopPrice;
+			TileScript.Owner.Cash += TileScript.ShopPrice;
 		}
 		yield break;
 	}
