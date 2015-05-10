@@ -38,8 +38,11 @@ public class PropertyActions : BaseTileActions {
 				UIManager.YesButtonClick += new UIManager.UIButtonHandler(PurchaseYes_Click);
 				UIManager.NoButtonClick += new UIManager.UIButtonHandler(PurchaseNo_Click);
 			}
-		} else {
+		} else if(TileScript.Owner == GameState.PlayerScript) {
 
+		} else {
+			GameState.PlayerScript -= TileScript.ShopPrice;
+			TileScript.Owner += TileScript.ShopPrice;
 		}
 		yield break;
 	}
