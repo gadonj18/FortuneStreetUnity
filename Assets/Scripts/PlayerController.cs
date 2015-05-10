@@ -98,6 +98,22 @@ public class PlayerController : MonoBehaviour {
 		}
 	}
 
+	public int NumProperties {
+		get {
+			int num = 0;
+			foreach(KeyValuePair<string, List<Property>> district in Properties) {
+				num += district.Value.Count;
+			}
+			return num;
+		}
+	}
+
+	public int NextSalary {
+		get {
+			return 500 + ((level + 1) * 50) + (NumProperties * 25);
+		}
+	}
+
 	public void Awake() {
 		properties = new Dictionary<string, List<Property>>();
 		stocks = new Dictionary<string, int>();
@@ -127,7 +143,46 @@ public class PlayerController : MonoBehaviour {
 	public int NumPropertiesInDistrict(string district) {
 		return Properties[district].Count;
 	}
-	
+
+	public bool CanLevelUp() {
+		int numSuits = 0;
+		if(suits[Constants.Suits.Wild]) numSuits++;
+		if(suits[Constants.Suits.Club]) numSuits++;
+		if(suits[Constants.Suits.Heart]) numSuits++;
+		if(suits[Constants.Suits.Spade]) numSuits++;
+		if(suits[Constants.Suits.Diamond]) numSuits++;
+		if(numSuits >= 4) {
+			return true;
+		}
+		return false;
+	}
+
+	public void LevelUp() {
+		int numSuits = 0;
+		if(suits[Constants.Suits.Club]) {
+			suits[Constants.Suits.Club] = false;
+			numSuits++;
+		}
+		if(suits[Constants.Suits.Heart]) {
+			suits[Constants.Suits.Heart] = false;
+			numSuits++;
+		}
+		if(suits[Constants.Suits.Spade]) {
+			suits[Constants.Suits.Spade] = false;
+			numSuits++;
+		}
+		if(suits[Constants.Suits.Diamond]) {
+			suits[Constants.Suits.Diamond] = false;
+			numSuits++;
+		}
+		if(numSuits < 4 && suits[Constants.Suits.Wild]) {
+			suits[Constants.Suits.Wild] = false;
+		}
+
+		cash += NextSalary;
+		level++;
+	}
+
 	public void Hide() {
 		this.transform.Find("Model").GetComponent<SkinnedMeshRenderer>().enabled = false;
 	}

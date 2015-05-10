@@ -1,14 +1,21 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.UI;
 
 public class BankActions : BaseTileActions {
-	public override IEnumerator PassTile(bool reversing = false) {
-		yield return null;
+	public override IEnumerator OnTile() {
+		if(GameState.PlayerScript.CanLevelUp()) {
+			GameState.PlayerScript.LevelUp();
+			UIManager.Instance.Message.transform.FindChild("Text").GetComponent<Text>().text = "Level Up!";
+			UIManager.Instance.Message.SetActive(true);
+			yield return new WaitForSeconds(2f);
+			UIManager.Instance.Message.SetActive(false);
+		}
+		yield break;
 	}
+
 	public override IEnumerator LandOnTile() {
-		yield return null;
-	}
-	public override IEnumerator LeaveTile() {
-		yield return null;
+		FinishTurn();
+		yield break;
 	}
 }
