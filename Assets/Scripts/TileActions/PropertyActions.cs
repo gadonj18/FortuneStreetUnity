@@ -58,6 +58,7 @@ public class PropertyActions : BaseTileActions {
 		UIManager.NoButtonClick -= new UIManager.UIButtonHandler(PurchaseNo_Click);
 		GameState.PlayerScript.Cash -= TileScript.ShopValue;
 		TileScript.ChangeOwner(GameState.PlayerScript);
+		GameState.FinishTurn();
 	}
 	
 	public void PurchaseNo_Click(UIEventArgs e) {
