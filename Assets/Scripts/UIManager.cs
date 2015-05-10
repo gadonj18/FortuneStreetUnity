@@ -32,6 +32,10 @@ public class UIManager : Singleton<UIManager> {
 	public GameObject Message {
 		get { return message; }
 	}
+	private GameObject settleDebtMenu;
+	public GameObject SettleDebtMenu {
+		get { return settleDebtMenu; }
+	}
 
 	public void Awake() {
 		actionMenu = GameObject.Find("/UIOverlay/ActionMenu");
@@ -41,10 +45,13 @@ public class UIManager : Singleton<UIManager> {
 		unownedPropertyInfo = GameObject.Find("/UIOverlay/UnownedPropertyInfo");
 		playerScores = GameObject.Find("/UIOverlay/PlayerScores");
 		message = GameObject.Find("/UIOverlay/Message");
+		settleDebtMenu = GameObject.Find("/UIOverlay/SettleDebtMenu");
 	}
 
 	public delegate void UIButtonHandler(UIEventArgs e);
 	public static event UIButtonHandler RollButtonClick;
+	public static event UIButtonHandler SellStockButtonClick;
+	public static event UIButtonHandler SellShopButtonClick;
 	public static event UIButtonHandler YesButtonClick;
 	public static event UIButtonHandler NoButtonClick;
 
@@ -58,6 +65,14 @@ public class UIManager : Singleton<UIManager> {
 	
 	public void NoButton_Click() {
 		if(NoButtonClick != null) NoButtonClick(new UIEventArgs());
+	}
+	
+	public void SellStockButton_Click() {
+		if(SellStockButtonClick != null) SellStockButtonClick(new UIEventArgs());
+	}
+	
+	public void SellShopButton_Click() {
+		if(SellShopButtonClick != null) SellShopButtonClick(new UIEventArgs());
 	}
 }
 
