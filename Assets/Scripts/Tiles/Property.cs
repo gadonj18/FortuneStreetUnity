@@ -2,10 +2,19 @@
 using System.Collections;
 
 public class Property : Tile {
+	private Transform baseModel;
+	private Transform borderModel;
+	private Transform costText;
+	private Transform houseModel;
+	private Transform signModel;
+	private Transform signText;
+
+	public Material OwnedMaterial;
+	public Material UnownedMaterial;
+
 	private PlayerController owner;
 	public PlayerController Owner {
 		get { return owner; }
-		set { owner = value; }
 	}
 	private string propertyName;
 	public string PropertyName {
@@ -34,13 +43,39 @@ public class Property : Tile {
 		get { return ShopValue + InvestedAmount; }
 	}
 
-	public void Start() {
+	public void Awake() {
 		Type = Constants.TileCodes.Property;
-		transform.FindChild("Sign").FindChild("Cost").GetComponent<TextMesh>().text = ShopValue.ToString();
+		baseModel = transform.FindChild("Base");
+		borderModel = transform.FindChild("Border");
+		costText = transform.FindChild("Cost");
+		houseModel = transform.FindChild("House");
+		signModel = transform.FindChild("Sign");
+		signText = transform.FindChild("Sign/Cost");
+
+		baseModel.GetComponent<Renderer>().material = UnownedMaterial;
+		costText.GetComponent<Renderer>().enabled = false;
+		houseModel.GetComponent<Renderer>().enabled = false;
+		signModel.GetComponent<Renderer>().enabled = true;
+	}
+
+	public void Start() {
+		costText.GetComponent<TextMesh>().text = ShopPrice.ToString();
+		signText.GetComponent<TextMesh>().text = ShopValue.ToString();
 	}
 
 	public void SetDistrict(string district) {
 		District = district;
-		transform.FindChild("Border").gameObject.GetComponent<Renderer>().material.color = Config.Instance.GetDistrictColor(district);
+		borderModel.GetComponent<Renderer>().material.color = Config.Instance.GetDistrictColor(district);
+	}
+
+	public void ChangeOwner(PlayerController newOwner) {
+		if(owner == null) {
+			baseModel.GetComponent<Renderer>().material = OwnedMaterial;
+			costText.GetComponent<Renderer>().enabled = true;
+			houseModel.GetComponent<Renderer>().enabled = true;
+			signModel.GetComponent<Renderer>().enabled = false;
+		}
+		owner = newOwner;
+		baseModel.GetComponent<Renderer>().material.color = newOwner.Color;
 	}
 }
