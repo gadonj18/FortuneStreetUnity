@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class Property : Tile {
 	private Transform baseModel;
@@ -42,6 +43,7 @@ public class Property : Tile {
 	public int TotalValue {
 		get { return ShopValue + InvestedAmount; }
 	}
+
 
 	public void Awake() {
 		Type = Constants.TileCodes.Property;

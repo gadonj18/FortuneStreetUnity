@@ -8,6 +8,11 @@ public abstract class Tile : MonoBehaviour {
 	private Constants.TileCodes type;
 	private List<Constants.Directions> dirs = new List<Constants.Directions>();
 
+	private List<PlayerController> playersOnTile = new List<PlayerController>();
+	public List<PlayerController> PlayersOnTile {
+		get { return playersOnTile; }
+	}
+
 	public int BoardX {
 		get { return boardX; }
 		set { boardX = value; }

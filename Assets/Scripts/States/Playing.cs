@@ -77,6 +77,7 @@ public class Playing : BaseGameState {
 		UIManager.YesButtonClick -= new UIManager.UIButtonHandler(this.FinishMoveYes_Click);
 		UIManager.NoButtonClick -= new UIManager.UIButtonHandler(this.FinishMoveNo_Click);
 		currentState = States.FinishTurn;
+		playerScript.CurrentTile.PlayersOnTile.Add(playerScript);
 		if(playerScript.CurrentTile.GetComponent<BaseTileActions>() != null) {
 			StartCoroutine(playerScript.CurrentTile.GetComponent<BaseTileActions>().LandOnTile());
 		} else {
@@ -257,6 +258,7 @@ public class Playing : BaseGameState {
 	/// For example, to hide any UI elements that were shown as part of the previous tile's MoveToTile method.
 	/// </summary>
 	private IEnumerator LeaveTile(Tile tile) {
+		tile.PlayersOnTile.Remove(playerScript);
 		if(tile.GetComponent<BaseTileActions>() != null) {
 			yield return StartCoroutine(tile.GetComponent<BaseTileActions>().LeaveTile());
 		}
@@ -284,7 +286,8 @@ public class Playing : BaseGameState {
 		BuildLevel(GameLogic.GetComponent<Game>().BoardInfo);
 		board.BuildPaths();
 		AddPlayers(Config.Instance.playerInfo);
-		SwitchTurns(0);
+		currentPlayerIdx = 0;
+		SwitchTurns(currentPlayerIdx);
 		UIManager.Instance.ActionMenu.SetActive(true);
 		//UIManager.Instance.OwnedPropertyInfo.SetActive(false);
 		UIManager.Instance.UnownedPropertyInfo.SetActive(false);
@@ -332,14 +335,15 @@ public class Playing : BaseGameState {
 			PlayerController playerScript = (PlayerController)player.GetComponent<PlayerController>();
 			playerScript.gameLogic = this;
 			playerScript.CurrentTile = board.bank.GetComponent<Bank>();
+			playerScript.CurrentTile.PlayersOnTile.Add(playerScript);
+			playerScript.transform.position = new Vector3(playerScript.CurrentTile.transform.position.x, playerScript.transform.position.y, playerScript.CurrentTile.transform.position.z - 0.491f);
 			playerScript.PlayerName = playerInfo[i].Name;
 			playerScript.Color = playerInfo[i].Color;
 			playerScript.Cash = info.StartCash;
-			playerScript.Hide();
+			StartCoroutine(playerScript.Hide());
 			playerScript.ScoreUI = GameObject.Find("UIOverlay/PlayerScores/Player" + (i + 1));
 			players.Add(i, player);
 		}
-		currentPlayerIdx = 0;
 	}
 	#endregion
 
@@ -364,12 +368,12 @@ public class Playing : BaseGameState {
 	}
 
 	private void SwitchTurns(int playerNum) {
-		if(playerObj != null) {
-			playerObj.GetComponent<PlayerController>().Hide();
+		if(playerScript != null) {
+			StartCoroutine(playerScript.Hide());
 		}
 		playerObj = players[playerNum];
 		playerScript = playerObj.GetComponent<PlayerController>();
-		playerScript.Show();
+		StartCoroutine(playerScript.Show());
 		UIManager.Instance.ActionMenu.SetActive(true);
 		currentState = States.ChooseAction;
 		moveList = new MoveList();

@@ -20,6 +20,15 @@ public class PlayerController : MonoBehaviour {
 	public bool moving = false;
 	public float MoveSpeed = 2.6f;
 	public GameObject ScoreUI;
+	private Vector3 origScale = new Vector3(0.5f, 0.5f, 0.5f);
+	private Vector3 smallScale = new Vector3(0.1f, 0.1f, 0.1f);
+	private List<Vector3> tileCornerOffsets = new List<Vector3>() {
+		new Vector3(-0.5857f, 0f, -0.129f), //Front left
+		new Vector3(0.5857f, 0f, -0.129f), //Front right
+		new Vector3(-0.5857f, 0f, 1.011f), //Back left
+		new Vector3(0.5857f, 0f, 1.011f) //Back right
+	};
+	private bool hidden = false;
 
 	public delegate void PlayerMoveHandler(PlayerMoveEventArgs e);
 	public static event PlayerMoveHandler PlayerMove;
@@ -183,12 +192,40 @@ public class PlayerController : MonoBehaviour {
 		level++;
 	}
 
-	public void Hide() {
-		this.transform.Find("Model").GetComponent<SkinnedMeshRenderer>().enabled = false;
+	public IEnumerator Hide() {
+		while(hidden) {
+			yield return null;
+		}
+		Vector3 startPos = transform.position;
+		Vector3 tilePos = new Vector3(currentTile.transform.position.x, transform.position.y, currentTile.transform.position.z - 0.491f) + tileCornerOffsets[currentTile.PlayersOnTile.Count - 1];
+		float t = 0f;
+		float totalTime = 0.5f;
+		while(t < totalTime) {
+			transform.localScale = Vector3.Lerp(origScale, smallScale, t / totalTime);
+			transform.position = Vector3.Lerp(startPos, tilePos, t / totalTime);
+			t += Time.deltaTime;
+			yield return null;
+		}
+		hidden = true;
+		yield break;
 	}
 
-	public void Show() {
-		this.transform.Find("Model").GetComponent<SkinnedMeshRenderer>().enabled = true;
+	public IEnumerator Show() {
+		while(!hidden) {
+			yield return null;
+		}
+		Vector3 startPos = transform.position;
+		Vector3 tilePos = new Vector3(currentTile.transform.position.x, transform.position.y, currentTile.transform.position.z - 0.491f);
+		float t = 0f;
+		float totalTime = 0.5f;
+		while(t < totalTime) {
+			transform.localScale = Vector3.Lerp(smallScale, origScale, t / totalTime);
+			transform.position = Vector3.Lerp(startPos, tilePos, t / totalTime);
+			t += Time.deltaTime;
+			yield return null;
+		}
+		hidden = false;
+		yield break;
 	}
 
 	public IEnumerator MoveToTile(Tile targetTile) {
