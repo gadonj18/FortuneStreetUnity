@@ -8,7 +8,7 @@ public class SuitActions : BaseTileActions {
 		TileScript = Tile.GetComponent<BaseSuit>();
 	}
 
-	public override IEnumerator PassTile(bool reversing = false) {
+	public override IEnumerator MoveToTile(bool reversing = false) {
 		GameState.PlayerScript.Suits[TileScript.Suit] = true;
 		yield return null;
 	}
@@ -18,10 +18,7 @@ public class SuitActions : BaseTileActions {
 	}
 
 	public override IEnumerator LandOnTile() {
-		yield return null;
-	}
-
-	public override IEnumerator LeaveTile() {
-		yield return null;
+		GameState.FinishTurn();
+		yield break;
 	}
 }
