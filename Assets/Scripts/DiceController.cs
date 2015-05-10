@@ -15,6 +15,9 @@ public class DiceController : MonoBehaviour {
 	};
 
 	private Vector3 origScale = new Vector3(75f, 75f, 75f);
+	public Vector3 OrigScale {
+		get { return origScale; }
+	}
 	private Vector3 recessScale = new Vector3(0f, 0f, 0f);
 
 	private float rollSpeed = 500f;
