@@ -56,6 +56,7 @@ public class Property : Tile {
 		costText.GetComponent<Renderer>().enabled = false;
 		houseModel.GetComponent<Renderer>().enabled = false;
 		signModel.GetComponent<Renderer>().enabled = true;
+		signText.GetComponent<Renderer>().enabled = true;
 	}
 
 	public void Start() {
@@ -74,6 +75,7 @@ public class Property : Tile {
 			costText.GetComponent<Renderer>().enabled = true;
 			houseModel.GetComponent<Renderer>().enabled = true;
 			signModel.GetComponent<Renderer>().enabled = false;
+			signText.GetComponent<Renderer>().enabled = false;
 		}
 		owner = newOwner;
 		baseModel.GetComponent<Renderer>().material.color = newOwner.Color;
