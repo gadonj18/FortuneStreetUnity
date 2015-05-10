@@ -43,6 +43,7 @@ public class PropertyActions : BaseTileActions {
 		} else {
 			GameState.PlayerScript.Cash -= TileScript.ShopPrice;
 			TileScript.Owner.Cash += TileScript.ShopPrice;
+			FinishTurn();
 		}
 		yield break;
 	}
@@ -57,6 +58,7 @@ public class PropertyActions : BaseTileActions {
 		UIManager.YesButtonClick -= new UIManager.UIButtonHandler(PurchaseYes_Click);
 		UIManager.NoButtonClick -= new UIManager.UIButtonHandler(PurchaseNo_Click);
 		GameState.PlayerScript.Cash -= TileScript.ShopValue;
+		GameState.PlayerScript.AddProperty(TileScript);
 		TileScript.ChangeOwner(GameState.PlayerScript);
 		GameState.FinishTurn();
 	}
