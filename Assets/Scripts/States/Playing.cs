@@ -336,6 +336,7 @@ public class Playing : BaseGameState {
 
 	#region End Turn
 	public void FinishTurn() {
+		UIManager.Instance.UnownedPropertyInfo.SetActive(false);
 		if(PlayerScript.Cash < 0) {
 			UIManager.Instance.SettleDebtMenu.GetComponent<Renderer>().enabled = true;
 		} else {
