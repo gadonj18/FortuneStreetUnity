@@ -158,6 +158,11 @@ public class PlayerController : MonoBehaviour {
 		}
 	}
 
+	public void AddProperty(Property property) {
+		if(!properties.ContainsKey(property.District)) properties[property.District] = new List<Property>();
+		properties[property.District].Add(property);
+	}
+
 	void OnHopEnd() {
 		transform.rotation = Quaternion.Euler(-15f, 180f, 0f);
 	}
