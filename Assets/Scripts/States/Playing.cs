@@ -79,13 +79,14 @@ public class Playing : BaseGameState {
 		currentState = States.FinishTurn;
 		if(playerScript.CurrentTile.GetComponent<BaseTileActions>() != null) {
 			StartCoroutine(playerScript.CurrentTile.GetComponent<BaseTileActions>().LandOnTile());
+		} else {
+			FinishTurn();
 		}
 	}
 
 	/// <summary>
 	/// UI Event when player is canceling the end of their turn.
 	/// </summary>
-	/// <param name="e">E.</param>
 	public void FinishMoveNo_Click(UIEventArgs e) {
 		UIManager.YesButtonClick -= new UIManager.UIButtonHandler(this.FinishMoveYes_Click);
 		UIManager.NoButtonClick -= new UIManager.UIButtonHandler(this.FinishMoveNo_Click);
