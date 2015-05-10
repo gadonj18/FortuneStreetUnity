@@ -12,6 +12,7 @@ public class Playing : BaseGameState {
 	private States currentState;
 	private Board board = new Board();
 	private Dictionary<int, GameObject> players = new Dictionary<int, GameObject>();
+	private int currentPlayerIdx;
 	private GameObject playerObj;
 	private PlayerController playerScript;
 	public PlayerController PlayerScript {
@@ -40,6 +41,8 @@ public class Playing : BaseGameState {
 	/// </summary>
 	public void Awake() {
 		UIManager.RollButtonClick += new UIManager.UIButtonHandler(RollButton_Click);
+		UIManager.SellStockButtonClick += new UIManager.UIButtonHandler(SellStockButton_Click);
+		UIManager.SellShopButtonClick += new UIManager.UIButtonHandler(SellShopButton_Click);
 		DiceController.DiceSpun += new DiceController.DiceSpinHandler(DiceSpun);
 		currentState = States.ChooseAction;
 		diceSprites = Resources.LoadAll<Sprite>(@"Sprites/UIDice");
@@ -62,7 +65,6 @@ public class Playing : BaseGameState {
 	public void RollButton_Click(UIEventArgs e) {
 		UIManager.Instance.ActionMenu.SetActive(false);
 		movesLeft = Random.Range(1, 6);
-		movesLeft = 1;
 		UIManager.Instance.Dice.GetComponent<Renderer>().enabled = true;
 		StartCoroutine(UIManager.Instance.Dice.GetComponent<DiceController>().Roll(movesLeft));
 	}
@@ -128,6 +130,7 @@ public class Playing : BaseGameState {
 	/// </summary>
 	public void DiceSpun() {
 		UIManager.Instance.Dice.GetComponent<Renderer>().enabled = false;
+		UIManager.Instance.Dice.transform.localScale = UIManager.Instance.Dice.GetComponent<DiceController>().OrigScale;
 		UIManager.Instance.DiceMoves.GetComponent<Image>().sprite = diceSprites[movesLeft - 1];
 		UIManager.Instance.DiceMoves.GetComponent<Image>().enabled = true;
 		possiblePaths = board.GetPaths(playerScript.CurrentTile, playerScript.Direction, movesLeft);
@@ -149,6 +152,7 @@ public class Playing : BaseGameState {
 		while(playerScript.moving) {
 			yield return null;
 		}
+
 		StopCoroutine("ReverseToPath");
 		StopCoroutine("ReverseToTile");
 		StopCoroutine("ProcessMoveQueue");
@@ -268,7 +272,7 @@ public class Playing : BaseGameState {
 		BuildLevel(GameLogic.GetComponent<Game>().BoardInfo);
 		board.BuildPaths();
 		AddPlayers(Config.Instance.playerInfo);
-		SwitchPlayers(1);
+		SwitchTurns(0);
 		Camera.main.GetComponent<MoveCamera>().Character = playerObj;
 		UIManager.Instance.ActionMenu.SetActive(true);
 		//UIManager.Instance.OwnedPropertyInfo.SetActive(false);
@@ -277,7 +281,7 @@ public class Playing : BaseGameState {
 		UIManager.Instance.Dice.GetComponent<Renderer>().enabled = false;
 		UIManager.Instance.DiceMoves.GetComponent<Image>().enabled = false;
 		UIManager.Instance.Message.SetActive(false);
-		moveList.ClearQueue();
+		UIManager.Instance.SettleDebtMenu.SetActive(false);
 		yield return null;
 	}
 
@@ -310,29 +314,45 @@ public class Playing : BaseGameState {
 	/// <summary>
 	/// Create players based on the information from the Config
 	/// </summary>
-	private void AddPlayers(Dictionary<int,PlayerInfo> playerInfo) {
+	private void AddPlayers(List<PlayerInfo> playerInfo) {
 		BoardInfo info = this.GameLogic.GetComponent<Game>().BoardInfo;
-		foreach(KeyValuePair<int, PlayerInfo> entry in playerInfo) {
+		for(var i = 0; i < playerInfo.Count; i++) {
+		//foreach(PlayerInfo entry in playerInfo) {
 			GameObject player = (GameObject)GameObject.Instantiate(Resources.Load("Prefabs/Characters/LeftShark"));
 			PlayerController playerScript = (PlayerController)player.GetComponent<PlayerController>();
 			playerScript.gameLogic = this;
 			playerScript.CurrentTile = board.bank.GetComponent<Bank>();
-			playerScript.PlayerName = entry.Value.Name;
-			playerScript.Color = entry.Value.Color;
+			playerScript.PlayerName = playerInfo[i].Name;
+			playerScript.Color = playerInfo[i].Color;
 			playerScript.Cash = info.StartCash;
 			playerScript.Hide();
-			playerScript.ScoreUI = GameObject.Find("UIOverlay/PlayerScores/Player" + entry.Key);
-			players.Add(entry.Key, player);
+			playerScript.ScoreUI = GameObject.Find("UIOverlay/PlayerScores/Player" + (i + 1));
+			players.Add(i, player);
 		}
+		currentPlayerIdx = 0;
 	}
 	#endregion
 
-	#region Turn management
+	#region End Turn
 	public void FinishTurn() {
-
+		if(PlayerScript.Cash < 0) {
+			UIManager.Instance.SettleDebtMenu.GetComponent<Renderer>().enabled = true;
+		} else {
+			currentPlayerIdx++;
+			if(currentPlayerIdx > 3) currentPlayerIdx = 0;
+			SwitchTurns(currentPlayerIdx);
+		}
+	}
+	
+	private void SellStockButton_Click(UIEventArgs e) {
+		
+	}
+	
+	private void SellShopButton_Click(UIEventArgs e) {
+		
 	}
 
-	private void SwitchPlayers(int playerNum) {
+	private void SwitchTurns(int playerNum) {
 		if(playerObj != null) {
 			playerObj.GetComponent<PlayerController>().Hide();
 		}
@@ -340,6 +360,9 @@ public class Playing : BaseGameState {
 		playerScript = playerObj.GetComponent<PlayerController>();
 		playerScript.Show();
 		Camera.main.GetComponent<MoveCamera>().Character = playerObj;
+		UIManager.Instance.ActionMenu.SetActive(true);
+		currentState = States.ChooseAction;
+		moveList = new MoveList();
 	}
 	#endregion
 }
