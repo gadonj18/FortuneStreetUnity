@@ -2,9 +2,10 @@
 using System.Collections;
 
 public interface ITileActions {
-	IEnumerator PassTile(bool reversing = false);
-	IEnumerator LandOnTile();
+	IEnumerator MoveToTile(bool reversing = false);
+	IEnumerator OnTile();
 	IEnumerator LeaveTile();
+	IEnumerator LandOnTile();
 	void MoveChanges(Move move);
 	void FinishTurn();
 }
