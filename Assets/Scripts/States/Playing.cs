@@ -90,7 +90,7 @@ public class Playing : BaseGameState {
 	public void FinishMoveNo_Click(UIEventArgs e) {
 		UIManager.YesButtonClick -= new UIManager.UIButtonHandler(this.FinishMoveYes_Click);
 		UIManager.NoButtonClick -= new UIManager.UIButtonHandler(this.FinishMoveNo_Click);
-		StartCoroutine("MoveToTile", moveList.Moves[moveList.Moves.Count - 1].fromTile);
+		StartCoroutine("MovePlayerToTile", moveList.Moves[moveList.Moves.Count - 1].fromTile);
 		UIManager.Instance.DiceMoves.GetComponent<Image>().sprite = diceSprites[0];
 		UIManager.Instance.DiceMoves.GetComponent<Image>().enabled = true;
 		UIManager.Instance.YesNoMenu.SetActive(false);
@@ -120,7 +120,7 @@ public class Playing : BaseGameState {
 	public void Move_LeftClick(InputEventArgs e) {
 		Tile targetTile = board.GetTileAt(e.MousePosition);
 		if(targetTile != null && targetTile != playerScript.CurrentTile) {
-			StartCoroutine("MoveToTile", targetTile);
+			StartCoroutine("MovePlayerToTile", targetTile);
 		}
 	}
 	#endregion
@@ -142,9 +142,9 @@ public class Playing : BaseGameState {
 	}
 
 	/// <summary>
-	/// Upon clicking a tile, MoveToTile will determine which path the player must take to get to the target tile and traverse it.
+	/// Upon clicking a tile, MovePlayerToTile will determine which path the player must take to get to the target tile and traverse it.
 	/// </summary>
-	private IEnumerator MoveToTile(Tile targetTile) {
+	private IEnumerator MovePlayerToTile(Tile targetTile) {
 		//Path from turn's starting tile to targetTile, not neccessarily full path containing targetTile
 		List<Tile> path = board.GetPathToTile(possiblePaths, targetTile);
 		if(path.Count == 0) yield break;
@@ -191,8 +191,9 @@ public class Playing : BaseGameState {
 
 			Move lastMove = moveList.Moves[i];
 			yield return StartCoroutine(LeaveTile(playerScript.CurrentTile));
-			yield return StartCoroutine(PassTile(lastMove.fromTile, true));
+			yield return StartCoroutine(MoveToTile(lastMove.fromTile, true));
 			yield return StartCoroutine(playerScript.MoveToTile(lastMove.fromTile));
+			yield return StartCoroutine(OnTile(playerScript.CurrentTile));
 			ReverseMoveChanges(lastMove);
 			movesLeft++;
 		}
@@ -212,7 +213,7 @@ public class Playing : BaseGameState {
 	}
 
 	/// <summary>
-	/// After MoveToTile builds a queue of tiles to move to, move the player along this queue.
+	/// After MovePlayerToTile builds a queue of tiles to move to, move the player along this queue.
 	/// </summary>
 	private IEnumerator ProcessMoveQueue() {
 		List<Tile> queue = new List<Tile>();
@@ -221,28 +222,39 @@ public class Playing : BaseGameState {
 			Move newMove = new Move();
 			newMove.fromTile = playerScript.CurrentTile;
 			newMove.toTile = nextTile;
+			if(movesLeft <= 1) UIManager.Instance.DiceMoves.GetComponent<Image>().enabled = false;
 			yield return StartCoroutine(LeaveTile(newMove.fromTile));
-			yield return StartCoroutine(PassTile(newMove.toTile));
+			yield return StartCoroutine(MoveToTile(newMove.toTile));
 			if(newMove.toTile.GetComponent<BaseTileActions>() != null) newMove.toTile.GetComponent<BaseTileActions>().MoveChanges(newMove);
 			yield return StartCoroutine(playerScript.MoveToTile(nextTile));
+			yield return StartCoroutine(OnTile(playerScript.CurrentTile));
 			movesLeft--;
 			moveList.Next(newMove);
 		}
 	}
-
+	
 	/// <summary>
-	/// When a player moves to a tile, the logic is handled in the tile's TileAction script's PassTile method.
+	/// While a player is moving to a tile, the logic is handled in the tile's TileAction script's MoveToTile method.
+	/// </summary>
+	private IEnumerator MoveToTile(Tile tile, bool reversing = false) {
+		if(tile.GetComponent<BaseTileActions>() != null) {
+			yield return StartCoroutine(tile.GetComponent<BaseTileActions>().MoveToTile(reversing));
+		}
+	}
+	
+	/// <summary>
+	/// When a player lands on a tile, the logic is handled in the tile's TileAction script's OnTile method.
 	/// For example, to collect a suit, purchase stock, or level up at the bank.
 	/// </summary>
-	private IEnumerator PassTile(Tile tile, bool reversing = false) {
+	private IEnumerator OnTile(Tile tile) {
 		if(tile.GetComponent<BaseTileActions>() != null) {
-			yield return StartCoroutine(tile.GetComponent<BaseTileActions>().PassTile(reversing));
+			yield return StartCoroutine(tile.GetComponent<BaseTileActions>().OnTile());
 		}
 	}
 
 	/// <summary>
 	/// When a player moves off a tile, the logic is handled in the previous tile's TileAction script's LeaveTile method.
-	/// For example, to hide any UI elements that were shown as part of the previous tile's PassTile.
+	/// For example, to hide any UI elements that were shown as part of the previous tile's MoveToTile method.
 	/// </summary>
 	private IEnumerator LeaveTile(Tile tile) {
 		if(tile.GetComponent<BaseTileActions>() != null) {
@@ -256,7 +268,6 @@ public class Playing : BaseGameState {
 	private void ConfirmFinishMove() {
 		UIManager.YesButtonClick += new UIManager.UIButtonHandler(this.FinishMoveYes_Click);
 		UIManager.NoButtonClick += new UIManager.UIButtonHandler(this.FinishMoveNo_Click);
-		UIManager.Instance.DiceMoves.GetComponent<Image>().enabled = false;
 		UIManager.Instance.YesNoMenu.transform.FindChild("Title/Text").GetComponent<Text>().text = "Stop here?";
 		UIManager.Instance.YesNoMenu.SetActive(true);
 		currentState = States.Confirm;
@@ -274,7 +285,6 @@ public class Playing : BaseGameState {
 		board.BuildPaths();
 		AddPlayers(Config.Instance.playerInfo);
 		SwitchTurns(0);
-		Camera.main.GetComponent<MoveCamera>().Character = playerObj;
 		UIManager.Instance.ActionMenu.SetActive(true);
 		//UIManager.Instance.OwnedPropertyInfo.SetActive(false);
 		UIManager.Instance.UnownedPropertyInfo.SetActive(false);
@@ -283,13 +293,12 @@ public class Playing : BaseGameState {
 		UIManager.Instance.DiceMoves.GetComponent<Image>().enabled = false;
 		UIManager.Instance.Message.SetActive(false);
 		UIManager.Instance.SettleDebtMenu.SetActive(false);
+
 		yield return null;
 	}
 
 	public override IEnumerator Ending() { yield return null; }
-	#endregion
 
-	#region Init
 	/// <summary>
 	/// Using the BoardInfo read from JSON when the game was started, construct the physical tiles representing the game board.
 	/// </summary>
@@ -361,10 +370,10 @@ public class Playing : BaseGameState {
 		playerObj = players[playerNum];
 		playerScript = playerObj.GetComponent<PlayerController>();
 		playerScript.Show();
-		Camera.main.GetComponent<MoveCamera>().Character = playerObj;
 		UIManager.Instance.ActionMenu.SetActive(true);
 		currentState = States.ChooseAction;
 		moveList = new MoveList();
+		Camera.main.GetComponent<MoveCamera>().SwitchTarget(playerObj.transform);
 	}
 	#endregion
 }
