@@ -37,11 +37,11 @@ public class Config {
 		}
 	}
 
-	public Dictionary<int, PlayerInfo> playerInfo = new Dictionary<int, PlayerInfo>() {
-		{ 1, new PlayerInfo("Player1", Color.red) },
-		{ 2, new PlayerInfo("Player2", Color.blue) },
-		{ 3, new PlayerInfo("Player3", Color.green) },
-		{ 4, new PlayerInfo("Player4", Color.white) }
+	public List<PlayerInfo> playerInfo = new List<PlayerInfo>() {
+		{ new PlayerInfo("Player1", Color.red) },
+		{ new PlayerInfo("Player2", Color.blue) },
+		{ new PlayerInfo("Player3", Color.green) },
+		{ new PlayerInfo("Player4", Color.white) }
 	};
 }
 
