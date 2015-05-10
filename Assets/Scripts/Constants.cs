@@ -29,7 +29,7 @@
 
 	public enum TileConstraints { PrevDir };
 
-	public enum Suits { Heart, Spade, Diamond, Club };
+	public enum Suits { Wild, Heart, Spade, Diamond, Club };
 
 	public enum InputEvents {
 		MouseClick,
