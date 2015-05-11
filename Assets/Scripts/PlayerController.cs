@@ -229,6 +229,7 @@ public class PlayerController : MonoBehaviour {
 	}
 
 	public IEnumerator MoveToTile(Tile targetTile) {
+		direction = gameLogic.Board.GetDir(currentTile, targetTile);
 		moving = true;
 		Vector3 targetPos = new Vector3(targetTile.transform.position.x, transform.position.y, targetTile.transform.position.z - 0.491f);
 		GetComponent<Animator>().Play(leftHopNext ? hopLeftHash : hopRightHash);

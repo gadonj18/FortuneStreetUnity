@@ -123,7 +123,7 @@ public class Board {
 	public List<List<Tile>> GetPaths(Tile tile, Constants.Directions direction, int movesLeft) {
 		List<List<Tile>> newPaths = new List<List<Tile>>();
 		foreach(Constants.Directions dir in tile.Dirs) {
-			if(dir != direction) {
+			if(direction == Constants.Directions.Any || dir != ReverseDirection(direction)) {
 				Vector2 newDir = DirToXY[dir];
 				List<Tile> newPath = new List<Tile>();
 				Tile newTile = (Tile)tiles[(int)newDir.x + tile.BoardX][(int)newDir.y + tile.BoardY].GetComponent<Tile>();
@@ -176,5 +176,15 @@ public class Board {
 			}
 		}
 		return false;
+	}
+
+	public Constants.Directions GetDir(Tile from, Tile to) {
+		int diffX = to.BoardX - from.BoardX;
+		int diffY = to.BoardY - from.BoardY;
+		return XYtoDir[diffX][diffY];
+	}
+
+	public Constants.Directions ReverseDirection(Constants.Directions dir) {
+		return XYtoDir[(int)(DirToXY[dir].x) * -1][(int)(DirToXY[dir].y) * -1];
 	}
 }
