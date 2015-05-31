@@ -41,7 +41,7 @@ public class Config {
 		{ new PlayerInfo("Player1", Color.red) },
 		{ new PlayerInfo("Player2", Color.blue) },
 		{ new PlayerInfo("Player3", Color.green) },
-		{ new PlayerInfo("Player4", Color.white) }
+		{ new PlayerInfo("Player4", Color.yellow) }
 	};
 }
 

@@ -8,9 +8,15 @@ using System.Collections.Generic;
 /// </summary>
 public class Playing : BaseGameState {
 	#region Members and Properties
-	private enum States { ChooseAction, Roll, Move, Confirm, FinishTurn };
-	private States currentState;
+	public enum States { Init, ChooseAction, Roll, Move, Confirm, FinishTurn };
+	private States currentState = States.Init;
+	public States CurrentState {
+		get { return currentState; }
+	}
 	private Board board = new Board();
+	public Board Board {
+		get { return board; }
+	}
 	private Dictionary<int, GameObject> players = new Dictionary<int, GameObject>();
 	private int currentPlayerIdx;
 	private GameObject playerObj;
@@ -44,7 +50,6 @@ public class Playing : BaseGameState {
 		UIManager.SellStockButtonClick += new UIManager.UIButtonHandler(SellStockButton_Click);
 		UIManager.SellShopButtonClick += new UIManager.UIButtonHandler(SellShopButton_Click);
 		DiceController.DiceSpun += new DiceController.DiceSpinHandler(DiceSpun);
-		currentState = States.ChooseAction;
 		diceSprites = Resources.LoadAll<Sprite>(@"Sprites/UIDice");
 	}
 
@@ -284,6 +289,8 @@ public class Playing : BaseGameState {
 	/// </summary>
 	public override IEnumerator Starting() {
 		BuildLevel(GameLogic.GetComponent<Game>().BoardInfo);
+		UIManager.Instance.MiniMap.GetComponent<MiniMap>().GameState = this;
+		UIManager.Instance.MiniMap.GetComponent<MiniMap>().BuildMiniMap(board);
 		board.BuildPaths();
 		AddPlayers(Config.Instance.playerInfo);
 		currentPlayerIdx = 0;
@@ -296,8 +303,9 @@ public class Playing : BaseGameState {
 		UIManager.Instance.DiceMoves.GetComponent<Image>().enabled = false;
 		UIManager.Instance.Message.SetActive(false);
 		UIManager.Instance.SettleDebtMenu.SetActive(false);
-
-		yield return null;
+		currentState = States.ChooseAction;
+		UIManager.Instance.MiniMap.GetComponent<MiniMap>().SwitchTurns();
+		yield break;
 	}
 
 	public override IEnumerator Ending() { yield return null; }
@@ -317,6 +325,8 @@ public class Playing : BaseGameState {
 				newTile.GetComponent<BaseTileActions>().GameState = this;
 			}
 			board.AddTile(newTile, info.Tiles[i].TileX, info.Tiles[i].TileY);
+			if(info.Tiles[i].TileX > board.MaxX) board.MaxX = info.Tiles[i].TileX;
+			if(info.Tiles[i].TileY > board.MaxY) board.MaxY = info.Tiles[i].TileY;
 		}
 		board.Districts = info.Districts;
 		for(int i = 0; i < board.Districts.Count; i++) {
@@ -343,6 +353,18 @@ public class Playing : BaseGameState {
 			StartCoroutine(playerScript.Hide());
 			playerScript.ScoreUI = GameObject.Find("UIOverlay/PlayerScores/Player" + (i + 1));
 			players.Add(i, player);
+
+			GameObject playerScore = (GameObject)GameObject.Instantiate(Resources.Load("Prefabs/UI/PlayerScore"));
+			playerScore.transform.SetParent(UIManager.Instance.PlayerScores.transform);
+			playerScore.name = "Player" + (i + 1);
+			RectTransform rect = playerScore.GetComponent<RectTransform>();
+			rect.localPosition = new Vector3(0f, -100f + (50f * i) + 10f, 0f);
+			rect.sizeDelta = new Vector2(0f, 50f);
+			playerScore.GetComponent<Image>().color = playerScript.Color;
+			playerScore.transform.FindChild("PlayerNameBG1").GetComponent<Image>().color = playerScript.Color;
+			playerScore.transform.FindChild("PlayerNameBG2").GetComponent<Image>().color = playerScript.Color;
+			playerScript.ScoreUI = playerScore;
+
 		}
 	}
 	#endregion
@@ -378,6 +400,7 @@ public class Playing : BaseGameState {
 		currentState = States.ChooseAction;
 		moveList = new MoveList();
 		Camera.main.GetComponent<MoveCamera>().SwitchTarget(playerObj.transform);
+		UIManager.Instance.MiniMap.GetComponent<MiniMap>().SwitchTurns();
 	}
 	#endregion
 }

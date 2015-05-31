@@ -3,9 +3,22 @@ using System.Collections.Generic;
 
 public class Board {
 	private Dictionary<int, Dictionary<int, GameObject>> tiles;
+	public Dictionary<int, Dictionary<int, GameObject>> Tiles {
+		get { return tiles; }
+	}
+	private int maxX;
+	public int MaxX {
+		get { return maxX; }
+		set { maxX = value; }
+	}
+	private int maxY;
+	public int MaxY {
+		get { return maxY; }
+		set { maxY = value; }
+	}
 	public GameObject bank;
 	public List<string> Districts;
-	private Dictionary<int, Dictionary<int, Constants.Directions>> XYtoDir = new Dictionary<int, Dictionary<int, Constants.Directions>>() {
+	public Dictionary<int, Dictionary<int, Constants.Directions>> XYtoDir = new Dictionary<int, Dictionary<int, Constants.Directions>>() {
 		{ -2, new Dictionary<int, Constants.Directions>() {
 				{ -2, Constants.Directions.SW },
 				{ -1, Constants.Directions.WSW },
@@ -39,7 +52,7 @@ public class Board {
 		}
 	};
 
-	private Dictionary<Constants.Directions, Vector2> DirToXY = new Dictionary<Constants.Directions, Vector2>() {
+	public Dictionary<Constants.Directions, Vector2> DirToXY = new Dictionary<Constants.Directions, Vector2>() {
 		{ Constants.Directions.SW, new Vector2(-2, -2) },
 		{ Constants.Directions.WSW, new Vector2(-2, -1) },
 		{ Constants.Directions.W, new Vector2(-2, 0) },
@@ -123,12 +136,14 @@ public class Board {
 	public List<List<Tile>> GetPaths(Tile tile, Constants.Directions direction, int movesLeft) {
 		List<List<Tile>> newPaths = new List<List<Tile>>();
 		foreach(Constants.Directions dir in tile.Dirs) {
+			//if(direction == Constants.Directions.Any || dir != ReverseDirection(direction)) {
 			if(direction == Constants.Directions.Any || dir != ReverseDirection(direction)) {
 				Vector2 newDir = DirToXY[dir];
 				List<Tile> newPath = new List<Tile>();
 				Tile newTile = (Tile)tiles[(int)newDir.x + tile.BoardX][(int)newDir.y + tile.BoardY].GetComponent<Tile>();
 				newPath.Add(newTile);
-				if(movesLeft > 1) {
+
+				if(movesLeft > 0) {
 					List<List<Tile>> subPaths = GetPaths(newTile, XYtoDir[(int)newDir.x * -1][(int)newDir.y * -1], movesLeft - 1);
 					foreach(List<Tile> path in subPaths) {
 						path.Insert(0, newTile);

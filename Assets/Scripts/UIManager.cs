@@ -36,6 +36,10 @@ public class UIManager : Singleton<UIManager> {
 	public GameObject SettleDebtMenu {
 		get { return settleDebtMenu; }
 	}
+	private GameObject miniMap;
+	public GameObject MiniMap {
+		get { return miniMap; }
+	}
 
 	public void Awake() {
 		actionMenu = GameObject.Find("/UIOverlay/ActionMenu");
@@ -46,6 +50,7 @@ public class UIManager : Singleton<UIManager> {
 		playerScores = GameObject.Find("/UIOverlay/PlayerScores");
 		message = GameObject.Find("/UIOverlay/Message");
 		settleDebtMenu = GameObject.Find("/UIOverlay/SettleDebtMenu");
+		miniMap = GameObject.Find("/UIOverlay/MiniMap");
 	}
 
 	public delegate void UIButtonHandler(UIEventArgs e);

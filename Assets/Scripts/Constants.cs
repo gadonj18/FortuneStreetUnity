@@ -1,4 +1,7 @@
-﻿public static class Constants {
+﻿using System.Collections.Generic;
+using UnityEngine;
+
+public static class Constants {
 	public enum Directions {
 		N, NNW, NW, WNW, W, WSW, SW, SSW, S, SSE, SE, ESE, E, ENE, NE, NNE, Any };
 
@@ -39,4 +42,11 @@
 		KeyHeld,
 		KeyUp
 	}
+
+	public static Dictionary<Suits, Color> SuitColors = new Dictionary<Suits, Color>() {
+		{ Suits.Heart, new Color(234f / 256f, 114f / 256f, 199f / 256f, 256f) },
+		{ Suits.Spade, new Color(0f, 38f / 256f, 235f / 256f, 256f) },
+		{ Suits.Diamond, new Color(227f / 256f, 241f / 256f, 0f, 256f) },
+		{ Suits.Club, new Color(0f, 189f / 256f, 53f / 256f, 256f) }
+	};
 }

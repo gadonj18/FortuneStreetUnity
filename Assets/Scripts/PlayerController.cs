@@ -135,18 +135,26 @@ public class PlayerController : MonoBehaviour {
 	}
 
 	public void Update() {
-		ScoreUI.transform.Find("Name").GetComponent<Text>().text = PlayerName;
-		ScoreUI.transform.Find("Cash").GetComponent<Text>().text = "$" + Cash.ToString();
-		ScoreUI.transform.Find("Worth").GetComponent<Text>().text = "$" + Worth.ToString();
-		if(Cash < 0) {
-			ScoreUI.transform.Find("Cash").GetComponent<Text>().color = Color.red;
+		if(gameLogic.CurrentState != Playing.States.Init) {
+			ScoreUI.transform.FindChild("Name").GetComponent<Text>().text = PlayerName;
+			ScoreUI.transform.FindChild("Cash").GetComponent<Text>().text = "$" + Cash.ToString();
+			ScoreUI.transform.FindChild("Worth").GetComponent<Text>().text = "$" + Worth.ToString();
+			if(Cash < 0) {
+				ScoreUI.transform.Find("Cash").GetComponent<Text>().color = Color.red;
+			}
+			if(suits[Constants.Suits.Club]) {
+				ScoreUI.transform.FindChild("Suits/Club").GetComponent<Image>().color = Constants.SuitColors[Constants.Suits.Club];
+			}
+			if(suits[Constants.Suits.Heart]) {
+				ScoreUI.transform.FindChild("Suits/Heart").GetComponent<Image>().color = Constants.SuitColors[Constants.Suits.Heart];
+			}
+			if(suits[Constants.Suits.Spade]) {
+				ScoreUI.transform.FindChild("Suits/Spade").GetComponent<Image>().color = Constants.SuitColors[Constants.Suits.Spade];
+			}
+			if(suits[Constants.Suits.Diamond]) {
+				ScoreUI.transform.FindChild("Suits/Diamond").GetComponent<Image>().color = Constants.SuitColors[Constants.Suits.Diamond];
+			}
 		}
-		string cardString = "";
-		if(suits[Constants.Suits.Club]) cardString += "C";
-		if(suits[Constants.Suits.Heart]) cardString += "H";
-		if(suits[Constants.Suits.Spade]) cardString += "S";
-		if(suits[Constants.Suits.Diamond]) cardString += "D";
-		ScoreUI.transform.Find("Cards").GetComponent<Text>().text = cardString;
 	}
 
 	public int NumPropertiesInDistrict(string district) {
